@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+@theme {
+  --color-border: rgb(var(--border));
+  --color-input: rgb(var(--input));
+  --color-ring: rgb(var(--ring));
+  --color-background: rgb(var(--background));
+  --color-foreground: rgb(var(--foreground));
+
+  --color-primary: rgb(var(--primary));
+  --color-primary-foreground: rgb(var(--primary-foreground));
+  
+  --color-secondary: rgb(var(--secondary));
+  --color-secondary-foreground: rgb(var(--secondary-foreground));
+
+  --color-destructive: rgb(var(--destructive));
+  --color-destructive-foreground: rgb(var(--destructive-foreground));
+
+  --color-muted: rgb(var(--muted));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+
+  --color-accent: rgb(var(--accent));
+  --color-accent-foreground: rgb(var(--accent-foreground));
+
+  --color-popover: rgb(var(--popover));
+  --color-popover-foreground: rgb(var(--popover-foreground));
+
+  --color-card: rgb(var(--card));
+  --color-card-foreground: rgb(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* ─────────────────────────────────────────────
+   LIGHT MODE  (clean whites with indigo accents)
+   ───────────────────────────────────────────── */
+:root {
+  /* Surfaces */
+  --background: 249 250 251;      /* gray-50 — very light neutral */
+  --foreground: 15 23 42;         /* slate-900 */
+
+  --card: 255 255 255;            /* pure white cards */
+  --card-foreground: 15 23 42;
+
+  --popover: 255 255 255;
+  --popover-foreground: 15 23 42;
+
+  /* Brand — Indigo 600 */
+  --primary: 79 70 229;
+  --primary-foreground: 255 255 255;
+
+  /* Secondary surfaces */
+  --secondary: 243 244 246;       /* gray-100 */
+  --secondary-foreground: 15 23 42;
+
+  --muted: 243 244 246;
+  --muted-foreground: 107 114 128; /* gray-500 */
+
+  --accent: 238 242 255;          /* indigo-50 */
+  --accent-foreground: 79 70 229;
+
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+
+  --border: 229 231 235;          /* gray-200 */
+  --input: 229 231 235;
+  --ring: 99 102 241;             /* indigo-500 */
+
+  --radius: 0.75rem;
+
+  /* Gradient stops (HSL) for reuse */
+  --gradient-from: 238 242 255;   /* indigo-50 */
+  --gradient-via: 245 243 255;    /* violet-50 */
+  --gradient-to: 249 250 251;     /* gray-50 */
+}
+
+/* ─────────────────────────────────────────────
+   DARK MODE  (zinc-950 base, indigo-violet theme)
+   ───────────────────────────────────────────── */
+.dark {
+  /* Surfaces — mirrors the Login page dark panel */
+  --background: 9 9 11;           /* zinc-950 */
+  --foreground: 250 250 250;      /* zinc-50 */
+
+  --card: 24 24 27;               /* zinc-900 */
+  --card-foreground: 250 250 250;
+
+  --popover: 24 24 27;
+  --popover-foreground: 250 250 250;
+
+  /* Brand — Indigo-500 (brighter on dark) */
+  --primary: 99 102 241;
+  --primary-foreground: 255 255 255;
+
+  /* Secondary surfaces */
+  --secondary: 39 39 42;          /* zinc-800 */
+  --secondary-foreground: 250 250 250;
+
+  --muted: 39 39 42;
+  --muted-foreground: 161 161 170; /* zinc-400 */
+
+  --accent: 49 46 129;            /* indigo-900 */
+  --accent-foreground: 199 210 254; /* indigo-200 */
+
+  --destructive: 239 68 68;
+  --destructive-foreground: 250 250 250;
+
+  --border: 39 39 42;             /* zinc-800 */
+  --input: 39 39 42;
+  --ring: 99 102 241;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* ─────────────────────────────────────────────
+   BRAND GRADIENT UTILITIES
+   ───────────────────────────────────────────── */
+
+/* Sidebar gradient background — dark indigo/violet like the login branding panel */
+.sidebar-bg {
+  background: linear-gradient(
+    160deg,
+    #09090b 0%,
+    #0f0c29 40%,
+    #1e1b4b 70%,
+    #09090b 100%
+  );
+}
+
+/* Sidebar active item glow */
+.sidebar-active-glow {
+  box-shadow: inset 3px 0 0 0 #6366f1, 0 0 12px rgba(99,102,241,0.15);
+}
+
+/* Brand gradient — used for accent text, buttons, badges */
+.brand-gradient {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+}
+
+/* Hero / page header gradient tint */
+.page-gradient {
+  background: linear-gradient(
+    to bottom right,
+    rgba(99,102,241,0.05) 0%,
+    transparent 60%
+  );
+}
+
+/* Dark page gradient (for dark mode usage behind cards) */
+.dark .page-gradient {
+  background: linear-gradient(
+    135deg,
+    rgba(99,102,241,0.12) 0%,
+    rgba(139,92,246,0.06) 40%,
+    transparent 70%
+  );
+}
+
+/* Glass card surface */
+.glass {
+  background: rgba(var(--card), 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--border), 0.4);
+}
+
+/* Solid surface */
+.surface {
+  background-color: rgba(var(--card), 1);
+  border: 1px solid rgba(var(--border), 1);
+  border-radius: var(--radius);
+}
+
+/* ─────────────────────────────────────────────
+   SCROLLBAR STYLES
+   ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--border), 0.8);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--muted-foreground), 0.5);
+}
+
+/* ─────────────────────────────────────────────
+   PAGE TRANSITIONS
+   ───────────────────────────────────────────── */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+/* ─────────────────────────────────────────────
+   INDIGO GLOW EFFECT (for primary buttons/elements)
+   ───────────────────────────────────────────── */
+.indigo-glow {
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.25), 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.indigo-glow:hover {
+  box-shadow: 0 0 32px rgba(99, 102, 241, 0.35), 0 8px 20px rgba(99, 102, 241, 0.2);
+}
