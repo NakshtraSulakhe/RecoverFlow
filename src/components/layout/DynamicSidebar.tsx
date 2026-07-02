@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { NAVIGATION_ITEMS, FEATURE_KEYS } from '../../constants/features';
 import { FeatureGuard } from '../routing/FeatureGuard';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,7 +20,10 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { user, tenant, hasRole } = useAuth();
+  const { mode } = useTheme();
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['Main', 'Customers']);
+
+  const isDark = mode === 'dark';
 
   const handleGroupToggle = (group: string) => {
     setExpandedGroups((prev) =>
@@ -57,7 +61,8 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
   return (
     <aside
       className={cn(
-        'hidden md:block h-screen sticky top-0 left-0 transition-all duration-300 z-30 shrink-0 bg-zinc-950 border-r border-white/5',
+        'hidden md:block h-screen sticky top-0 left-0 transition-all duration-300 z-30 shrink-0 border-r',
+        isDark ? 'bg-zinc-950 border-white/5' : 'bg-white border-zinc-200',
         collapsed ? 'w-[72px]' : 'w-[280px]'
       )}
     >
@@ -65,7 +70,8 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
         {/* Brand Header */}
         <div
           className={cn(
-            'flex items-center px-4 py-3 min-h-[64px] border-b border-white/5 transition-all',
+            'flex items-center px-4 py-3 min-h-[64px] border-b transition-all',
+            isDark ? 'border-white/5' : 'border-zinc-200',
             collapsed ? 'justify-center' : 'justify-between'
           )}
         >
@@ -75,8 +81,8 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                 RF
               </div>
               <div>
-                <h1 className="text-sm font-bold leading-none text-white">RecoverFlow</h1>
-                <span className="text-[10px] text-indigo-300/70 font-semibold">
+                <h1 className={`text-sm font-bold leading-none ${isDark ? 'text-white' : 'text-zinc-900'}`}>RecoverFlow</h1>
+                <span className={`text-[10px] font-semibold ${isDark ? 'text-indigo-300/70' : 'text-indigo-600'}`}>
                   {tenant?.tenant_name || 'Enterprise'}
                 </span>
               </div>
@@ -106,7 +112,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                 {!collapsed ? (
                   <div
                     onClick={() => handleGroupToggle(group.group)}
-                    className="flex items-center justify-between px-5 py-1.5 text-[10px] font-bold tracking-wider text-zinc-500 uppercase cursor-pointer hover:text-zinc-300 transition-colors group"
+                    className={`flex items-center justify-between px-5 py-1.5 text-[10px] font-bold tracking-wider uppercase cursor-pointer hover:text-zinc-300 transition-colors group ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}
                   >
                     <span>{group.group}</span>
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -118,7 +124,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                     </span>
                   </div>
                 ) : (
-                  <div className="border-t border-white/5 my-2" />
+                  <div className={`border-t my-2 ${isDark ? 'border-white/5' : 'border-zinc-200'}`} />
                 )}
 
                 <AnimatePresence initial={false}>
@@ -138,7 +144,7 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
                               'flex items-center gap-3 px-5 py-2.5 text-sm font-medium rounded-lg transition-all',
                               location.pathname === item.path
                                 ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                                : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                                : isDark ? 'text-zinc-400 hover:bg-white/5 hover:text-white' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
                             )}
                           >
                             {getIcon(item.icon)}
@@ -156,16 +162,16 @@ export const DynamicSidebar: React.FC<DynamicSidebarProps> = ({
 
         {/* User Info */}
         {!collapsed && user && (
-          <div className="border-t border-white/5 p-4">
+          <div className={`border-t p-4 ${isDark ? 'border-white/5' : 'border-zinc-200'}`}>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold">
                 {user.first_name?.[0] || user.email?.[0] || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">
+                <p className={`text-sm font-medium truncate ${isDark ? 'text-white' : 'text-zinc-900'}`}>
                   {user.first_name} {user.last_name}
                 </p>
-                <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                <p className={`text-xs truncate ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>{user.email}</p>
               </div>
             </div>
           </div>

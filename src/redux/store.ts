@@ -11,7 +11,6 @@ import uiReducer, { setLoading } from './slices/uiSlice'
 import aiAssistantReducer from './slices/aiAssistantSlice'
 import priorityScoringReducer from './slices/priorityScoringSlice'
 import ptpTrackerReducer from './slices/ptpTrackerSlice'
-import communicationReducer from './slices/communicationSlice'
 import { setStore } from '../services/axios/axios.config'
 import { setStoreForInterceptors } from '../services/axios/axios.interceptors'
 
@@ -28,7 +27,6 @@ export const store = configureStore({
     aiAssistant: aiAssistantReducer,
     priorityScoring: priorityScoringReducer,
     ptpTracker: ptpTrackerReducer,
-    communication: communicationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

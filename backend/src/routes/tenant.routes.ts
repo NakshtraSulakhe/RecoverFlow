@@ -135,4 +135,100 @@ router.put('/:id', authMiddleware, tenantMiddleware, tenantController.updateTena
  */
 router.delete('/:id', authMiddleware, requirePlatformOwner, tenantController.deleteTenant);
 
+/**
+ * @swagger
+ * /api/v1/tenants/{id}/suspend:
+ *   post:
+ *     summary: Suspend tenant
+ *     tags: [Tenants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Tenant suspended successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Tenant not found
+ */
+router.post('/:id/suspend', authMiddleware, requirePlatformOwner, tenantController.suspendTenant);
+
+/**
+ * @swagger
+ * /api/v1/tenants/{id}/activate:
+ *   post:
+ *     summary: Activate tenant
+ *     tags: [Tenants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Tenant activated successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Tenant not found
+ */
+router.post('/:id/activate', authMiddleware, requirePlatformOwner, tenantController.activateTenant);
+
+/**
+ * @swagger
+ * /api/v1/tenants/{id}/archive:
+ *   post:
+ *     summary: Archive tenant
+ *     tags: [Tenants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Tenant archived successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Tenant not found
+ */
+router.post('/:id/archive', authMiddleware, requirePlatformOwner, tenantController.archiveTenant);
+
+/**
+ * @swagger
+ * /api/v1/tenants/{id}/stats:
+ *   get:
+ *     summary: Get tenant statistics
+ *     tags: [Tenants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Tenant stats retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Tenant not found
+ */
+router.get('/:id/stats', authMiddleware, tenantMiddleware, tenantController.getTenantStats);
+
 export { router as tenantRoutes };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import DynamicSidebar from '../components/layout/DynamicSidebar';
 import AppHeader from '../components/layout/AppHeader';
 import Breadcrumb from '../components/layout/Breadcrumb';
@@ -9,7 +10,10 @@ import { cn } from '../utils/cn';
 
 export const NewMainLayout: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
+  const { mode } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const isDark = mode === 'dark';
 
   if (isLoading) {
     return (
@@ -18,7 +22,7 @@ export const NewMainLayout: React.FC = () => {
         justifyContent="center"
         alignItems="center"
         minHeight="100vh"
-        className="bg-zinc-950"
+        className={isDark ? 'bg-zinc-950' : 'bg-white'}
       >
         <CircularProgress sx={{ color: '#6366f1' }} />
       </Box>
@@ -30,7 +34,7 @@ export const NewMainLayout: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-zinc-950">
+    <div className={`flex h-screen ${isDark ? 'bg-zinc-950' : 'bg-zinc-50'}`}>
       {/* Sidebar */}
       <DynamicSidebar
         collapsed={sidebarCollapsed}

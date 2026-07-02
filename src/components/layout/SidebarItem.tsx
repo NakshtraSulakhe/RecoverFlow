@@ -51,15 +51,15 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
           collapsed ? "justify-center" : "justify-start",
           level > 0 ? "pl-6" : "pl-3",
           isActive 
-            ? "bg-indigo-600/20 text-indigo-300 sidebar-active-glow" 
-            : "text-zinc-400 hover:bg-white/8 hover:text-zinc-100",
-          hasChildren && isChildActive && !isActive && "text-zinc-200 bg-white/5"
+            ? "bg-indigo-600/20 text-indigo-300 dark:text-indigo-200 sidebar-active-glow" 
+            : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+          hasChildren && isChildActive && !isActive && "text-foreground bg-secondary"
         )}
       >
         {icon && (
           <span className={cn(
             "flex items-center justify-center transition-colors",
-            isActive ? "text-indigo-400" : "text-zinc-500 group-hover:text-zinc-300"
+            isActive ? "text-indigo-400 dark:text-indigo-300" : "text-muted-foreground group-hover:text-foreground"
           )}>
             {icon}
           </span>
@@ -70,7 +70,7 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
         )}
 
         {!collapsed && hasChildren && (
-          <span className={cn(isActive ? "text-indigo-400" : "text-zinc-500 group-hover:text-zinc-300")}>
+          <span className={cn(isActive ? "text-indigo-400 dark:text-indigo-300" : "text-muted-foreground group-hover:text-foreground")}>
             {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </span>
         )}

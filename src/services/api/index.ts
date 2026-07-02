@@ -7,3 +7,5 @@ export { customerService } from './customer.service';
 export { loanService } from './loan.service';
 export { recoveryService } from './recovery.service';
 export { aiService } from './ai.service';
+export { subscriptionService } from './subscription.service';
+export { moduleService } from './module.service';

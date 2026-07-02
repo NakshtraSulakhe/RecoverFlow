@@ -36,6 +36,31 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/tenants/${id}`,
     DELETE: (id: string) => `/tenants/${id}`,
     CONFIG: (id: string) => `/tenants/${id}/config`,
+    SUSPEND: (id: string) => `/tenants/${id}/suspend`,
+    ACTIVATE: (id: string) => `/tenants/${id}/activate`,
+    ARCHIVE: (id: string) => `/tenants/${id}/archive`,
+    STATS: (id: string) => `/tenants/${id}/stats`,
+  },
+
+  // Subscriptions
+  SUBSCRIPTIONS: {
+    LIST: '/subscriptions',
+    CREATE: '/subscriptions',
+    GET: (id: string) => `/subscriptions/${id}`,
+    UPDATE: (id: string) => `/subscriptions/${id}`,
+    UPGRADE: (id: string) => `/subscriptions/${id}/upgrade`,
+    SUSPEND: (id: string) => `/subscriptions/${id}/suspend`,
+    ACTIVATE: (id: string) => `/subscriptions/${id}/activate`,
+    CANCEL: (id: string) => `/subscriptions/${id}/cancel`,
+    RENEW: (id: string) => `/subscriptions/${id}/renew`,
+  },
+
+  // Usage
+  USAGE: {
+    RECORD: '/usage',
+    TENANT: (id: string) => `/usage/tenant/${id}`,
+    SUMMARY: (id: string) => `/usage/tenant/${id}/summary`,
+    DASHBOARD: (id: string) => `/usage/tenant/${id}/dashboard`,
   },
 
   // Customers

@@ -99,6 +99,53 @@ export interface PromiseToPay {
   updated_at: Date;
 }
 
+export interface Subscription {
+  id: string;
+  subscription_code: string;
+  tenant_id: string;
+  tenant_name?: string;
+  tenant_code?: string;
+  plan_code: string;
+  plan_name: string;
+  billing_cycle: 'monthly' | 'quarterly' | 'yearly';
+  amount: number;
+  currency: string;
+  status: 'active' | 'suspended' | 'cancelled' | 'expired';
+  start_date: Date;
+  end_date: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Module {
+  id: string;
+  module_code: string;
+  module_name: string;
+  category: string;
+  description?: string;
+  icon?: string;
+  route?: string;
+  sort_order: number;
+  status: 'active' | 'inactive';
+  is_core_module: boolean;
+  is_add_on: boolean;
+  requires_subscription_tier?: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface TenantModule {
+  id: string;
+  tenant_id: string;
+  module_id: string;
+  module_code: string;
+  is_enabled: boolean;
+  is_custom: boolean;
+  overrides_subscription: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface Payment {
   id: string;
   tenant_id: string;

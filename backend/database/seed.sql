@@ -1,8 +1,6 @@
 -- RecoverFlow Seed Data
 -- Run this after schema.sql to populate test data
 
-\c recoverflow_dev;
-
 -- Insert test tenant
 INSERT INTO tenants (tenant_name, tenant_code, contact_email, subscription_tier, subscription_status, features) 
 VALUES (
@@ -25,9 +23,9 @@ BEGIN
     -- Default password for all test users: "password123"
     -- Hash generated with bcrypt.hash("password123", 10)
     INSERT INTO users (tenant_id, first_name, last_name, email, password_hash, user_type, is_active, email_verified) VALUES
-    (v_tenant_id, 'Admin', 'User', 'admin@testorg.com', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'tenant_admin', true, true),
-    (v_tenant_id, 'John', 'Manager', 'manager@testorg.com', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'recovery_manager', true, true),
-    (v_tenant_id, 'Jane', 'Agent', 'agent@testorg.com', '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'recovery_agent', true, true)
+    (v_tenant_id, 'Admin', 'User', 'admin@testorg.com', '$2b$10$NtzmUQm.isOlTv0gxdNZiu6lYXyU9S.JdsyjSchyhXZVP9VWoC5OG', 'tenant_admin', true, true),
+    (v_tenant_id, 'John', 'Manager', 'manager@testorg.com', '$2b$10$NtzmUQm.isOlTv0gxdNZiu6lYXyU9S.JdsyjSchyhXZVP9VWoC5OG', 'recovery_manager', true, true),
+    (v_tenant_id, 'Jane', 'Agent', 'agent@testorg.com', '$2b$10$NtzmUQm.isOlTv0gxdNZiu6lYXyU9S.JdsyjSchyhXZVP9VWoC5OG', 'recovery_agent', true, true)
     ON CONFLICT (email) DO NOTHING;
 END $$;
 

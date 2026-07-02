@@ -26,8 +26,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         justifyContent="center"
         alignItems="center"
         minHeight="100vh"
+        sx={{ bgcolor: '#09090b' }}
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: '#6366f1' }} />
       </Box>
     );
   }

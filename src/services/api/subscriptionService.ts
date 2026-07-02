@@ -1,66 +1,84 @@
-/**
- * Subscription API Service
- */
+import axiosInstance from '../axios/axios.config'
 
-import { apiClient } from '../api'
-import { TenantSubscription } from '../../features/tenant/types'
+// Types
+export interface Subscription {
+  id: string
+  subscription_code: string
+  tenant_id: string
+  tenant_name: string
+  tenant_code: string
+  plan_code: string
+  plan_name: string
+  billing_cycle: string
+  amount: number
+  currency: string
+  status: string
+  start_date: string
+  end_date: string
+  created_at: string
+  updated_at: string
+}
 
-class SubscriptionService {
-  /**
-   * Get tenant subscription
-   */
-  async getSubscription(tenantId: string) {
-    const response = await apiClient.get(`/tenants/${tenantId}/subscription`)
-    return response.data
-  }
-
-  /**
-   * Update subscription
-   */
-  async updateSubscription(tenantId: string, data: Partial<TenantSubscription>) {
-    const response = await apiClient.put(`/tenants/${tenantId}/subscription`, data)
-    return response.data
-  }
-
-  /**
-   * Get invoices
-   */
-  async getInvoices(tenantId: string) {
-    const response = await apiClient.get(`/tenants/${tenantId}/subscription/invoices`)
-    return response.data
-  }
-
-  /**
-   * Get payment history
-   */
-  async getPaymentHistory(tenantId: string) {
-    const response = await apiClient.get(`/tenants/${tenantId}/subscription/payments`)
-    return response.data
-  }
-
-  /**
-   * Upgrade plan
-   */
-  async upgradePlan(tenantId: string, plan: string) {
-    const response = await apiClient.post(`/tenants/${tenantId}/subscription/upgrade`, { plan })
-    return response.data
-  }
-
-  /**
-   * Cancel subscription
-   */
-  async cancelSubscription(tenantId: string) {
-    const response = await apiClient.post(`/tenants/${tenantId}/subscription/cancel`)
-    return response.data
-  }
-
-  /**
-   * Renew subscription
-   */
-  async renewSubscription(tenantId: string) {
-    const response = await apiClient.post(`/tenants/${tenantId}/subscription/renew`)
-    return response.data
+export interface ApiResponse<T> {
+  success: boolean
+  data: T
+  message?: string
+  meta?: {
+    total: number
+    page: number
+    limit: number
+    total_pages: number
   }
 }
 
-export const subscriptionService = new SubscriptionService()
+// Subscription Service
+export const subscriptionService = {
+  // Get all subscriptions
+  getAllSubscriptions: (params?: {
+    page?: number
+    limit?: number
+    status?: string
+  }) => {
+    return axiosInstance.get<ApiResponse<Subscription[]>>('/v1/subscriptions', { params })
+  },
+
+  // Get subscription by ID
+  getSubscriptionById: (id: string) => {
+    return axiosInstance.get<ApiResponse<Subscription>>(`/v1/subscriptions/${id}`)
+  },
+
+  // Create subscription
+  createSubscription: (data: Partial<Subscription>) => {
+    return axiosInstance.post<ApiResponse<Subscription>>('/v1/subscriptions', data)
+  },
+
+  // Update subscription
+  updateSubscription: (id: string, data: Partial<Subscription>) => {
+    return axiosInstance.put<ApiResponse<Subscription>>(`/v1/subscriptions/${id}`, data)
+  },
+
+  // Upgrade subscription
+  upgradeSubscription: (id: string, data: { plan_code: string; plan_name: string; amount: number }) => {
+    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/upgrade`, data);
+  },
+
+  // Suspend subscription
+  suspendSubscription: (id: string) => {
+    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/suspend`)
+  },
+
+  // Activate subscription
+  activateSubscription: (id: string) => {
+    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/activate`)
+  },
+
+  // Cancel subscription
+  cancelSubscription: (id: string) => {
+    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/cancel`)
+  },
+
+  // Renew subscription
+  renewSubscription: (id: string) => {
+    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/renew`)
+  }
+}

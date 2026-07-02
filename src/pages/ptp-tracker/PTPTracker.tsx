@@ -1,203 +1,52 @@
-import { useEffect } from 'react'
-import {
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  Card,
-  CardContent,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Avatar,
-  Stack,
-} from '@mui/material'
-import { EventNote, AttachMoney, TrendingUp, Person } from '@mui/icons-material'
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
-import { format, parse, startOfWeek, getDay } from 'date-fns'
-import { enUS } from 'date-fns/locale'
-import 'react-big-calendar/lib/css/react-big-calendar.css'
-import { useAppDispatch, useAppSelector } from '../../redux/store'
-import { getPTPs } from '../../redux/slices/ptpTrackerSlice'
-import { PTP_STATUSES } from '../../features/ptp-tracker/constants'
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales: {
-    'en-US': enUS,
-  },
-})
+import { Box, Typography, Card, CardContent, Grid, Button } from '@mui/material'
+import { CalendarToday } from '@mui/icons-material'
 
 export default function PTPTracker() {
-  const dispatch = useAppDispatch()
-  const { ptps, calendarEvents, isLoading } = useAppSelector((state) => state.ptpTracker)
-
-  useEffect(() => {
-    dispatch(getPTPs())
-  }, [dispatch])
-
-  const stats = {
-    pending: ptps.filter(p => p.status === 'pending').length,
-    kept: ptps.filter(p => p.status === 'kept').length,
-    broken: ptps.filter(p => p.status === 'broken').length,
-    totalAmount: ptps.reduce((sum, p) => sum + p.amount, 0),
-  }
+  const ptps = [
+    { customer: 'John Doe', amount: '$1,500', date: '2024-01-15', status: 'Pending' },
+    { customer: 'Jane Smith', amount: '$800', date: '2024-01-16', status: 'Completed' },
+    { customer: 'Bob Johnson', amount: '$2,200', date: '2024-01-17', status: 'Overdue' },
+  ]
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Promise-to-Pay (PTP) Tracker
-      </Typography>
-
-      {/* Stats Cards */}
-      <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={2}>
-                <Avatar sx={{ bgcolor: 'primary.light' }}>
-                  <EventNote />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold">
-                    {stats.pending}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Pending PTPs
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={2}>
-                <Avatar sx={{ bgcolor: 'success.light' }}>
-                  <AttachMoney />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold">
-                    {stats.kept}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Kept Promises
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={2}>
-                <Avatar sx={{ bgcolor: 'error.light' }}>
-                  <TrendingUp />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold">
-                    {stats.broken}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Broken Promises
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={2}>
-                <Avatar sx={{ bgcolor: 'secondary.light' }}>
-                  <Person />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold">
-                    ₹{stats.totalAmount.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Amount
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <Box mb={4}>
+        <Typography variant="h2" gutterBottom>
+          PTP Tracker
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Track and manage Promise to Pay agreements.
+        </Typography>
+      </Box>
 
       <Grid container spacing={3}>
-        {/* Calendar */}
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              PTP Calendar
-            </Typography>
-            <Box sx={{ height: 500 }}>
-              <Calendar
-                localizer={localizer}
-                events={calendarEvents}
-                startAccessor="start"
-                endAccessor="end"
-                style={{ height: '100%' }}
-              />
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* PTP List */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Recent PTPs
-            </Typography>
-            {isLoading ? (
-              <Typography align="center">Loading...</Typography>
-            ) : (
-              <Stack spacing={2}>
-                {ptps.map((ptp) => (
-                  <Card key={ptp.id} variant="outlined">
-                    <CardContent>
-                      <Box display="flex" justifyContent="space-between" mb={1}>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          {format(new Date(ptp.ptpDate), 'MMM dd, yyyy')}
-                        </Typography>
-                        <Chip
-                          label={PTP_STATUSES[ptp.status].label}
-                          size="small"
-                          color={PTP_STATUSES[ptp.status].color}
-                        />
-                      </Box>
-                      <Typography variant="body2" color="text.secondary" mb={1}>
-                        Amount: ₹{ptp.amount.toLocaleString()}
-                      </Typography>
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="body2">
-                          Confidence: {ptp.confidenceScore}%
-                        </Typography>
-                      </Box>
-                      {ptp.notes && (
-                        <Typography variant="body2" color="text.secondary" mt={1}>
-                          {ptp.notes}
-                        </Typography>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </Stack>
-            )}
-          </Paper>
-        </Grid>
+        {ptps.map((ptp, index) => (
+          <Grid item xs={12} key={index}>
+            <Card>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={2}>
+                  <CalendarToday sx={{ fontSize: 40, color: 'primary.main' }} />
+                  <Box flex={1}>
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {ptp.customer}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Amount: {ptp.amount} | Date: {ptp.date}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" gap={1}>
+                    <Button variant="outlined" size="small">
+                      View
+                    </Button>
+                    <Button variant="contained" size="small">
+                      Mark Complete
+                    </Button>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
     </Box>
   )

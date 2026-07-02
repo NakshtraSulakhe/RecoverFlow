@@ -2,6 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { User, AuthErrorCode, UserRole } from '../../features/auth/types'
 import { authService } from '../../features/auth/authService'
 import { AUTH_CONFIG } from '../../features/auth/constants'
+import { STORAGE_KEYS } from '../../utils/constants'
 
 interface AuthState {
   isAuthenticated: boolean
@@ -36,34 +37,55 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string; tenantCode?: string; rememberMe?: boolean }, { rejectWithValue }) => {
     try {
-      // For demo purposes: accept any credentials and return a mock user
-      const mockResponse = {
+      const response = await authService.login(credentials)
+      
+      // Handle both possible response formats
+      const data = (response as any).data || response
+      
+      // Transform backend response to match frontend expected format
+      const userData = data.user || data
+      
+      return {
         user: {
-          id: '1',
-          email: credentials.email,
-          name: 'Demo User',
-          firstName: 'Demo',
-          lastName: 'User',
-          role: UserRole.ADMIN,
-          permissions: ['read', 'write', 'delete', 'admin'],
-          tenantId: 'demo-tenant',
-          tenantName: 'Demo Company',
-          language: 'en',
-          theme: 'light' as const,
-          timezone: 'UTC',
-          isActive: true,
-          isLocked: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          id: userData.id,
+          email: userData.email,
+          name: `${userData.first_name || userData.firstName || ''} ${userData.last_name || userData.lastName || ''}`.trim() || userData.email,
+          firstName: userData.first_name || userData.firstName || '',
+          lastName: userData.last_name || userData.lastName || '',
+          role: (userData.user_type || userData.role || 'agent') as UserRole,
+          permissions: userData.permissions || ['read', 'write'],
+          tenantId: data.tenant?.id || userData.tenant_id || null,
+          tenantName: data.tenant?.tenant_name || data.tenant?.name || null,
+          language: userData.language || 'en',
+          theme: (userData.theme || 'light') as const,
+          timezone: userData.timezone || 'UTC',
+          isActive: userData.status === 'active' || userData.is_active || true,
+          isLocked: userData.is_locked || false,
+          lastLoginAt: userData.last_login_at || userData.lastLoginAt || null,
+          createdAt: userData.created_at || userData.createdAt || new Date().toISOString(),
+          updatedAt: userData.updated_at || userData.updatedAt || new Date().toISOString(),
         },
-        accessToken: 'mock-access-token-' + Date.now(),
-        refreshToken: 'mock-refresh-token-' + Date.now(),
-        expiresIn: 3600,
-        tokenType: 'Bearer',
+        accessToken: data.access_token || data.accessToken,
+        refreshToken: data.refresh_token || data.refreshToken,
+        expiresIn: data.expires_in || data.expiresIn || 3600,
+        tokenType: data.token_type || data.tokenType || 'Bearer',
       }
-      return mockResponse
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed')
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed'
+      const errorCode = error.response?.data?.error_code || null
+      
+      // Handle specific error codes
+      if (error.response?.status === 401) {
+        return rejectWithValue({ message: errorMessage, code: AuthErrorCode.INVALID_CREDENTIALS })
+      } else if (error.response?.status === 403 && error.response?.data?.error_code === 'ACCOUNT_LOCKED') {
+        return rejectWithValue({ message: errorMessage, code: AuthErrorCode.ACCOUNT_LOCKED })
+      } else if (error.response?.status === 403 && error.response?.data?.error_code === 'ACCOUNT_INACTIVE') {
+        return rejectWithValue({ message: errorMessage, code: AuthErrorCode.ACCOUNT_INACTIVE })
+      } else if (error.response?.status === 429) {
+        return rejectWithValue({ message: 'Too many attempts. Please try again later.', code: AuthErrorCode.VALIDATION_ERROR })
+      }
+      
+      return rejectWithValue({ message: errorMessage, code: errorCode || AuthErrorCode.SERVER_ERROR })
     }
   }
 )
@@ -80,40 +102,18 @@ export const refreshTokens = createAsyncThunk(
   'auth/refreshTokens',
   async (refreshToken: string, { rejectWithValue }) => {
     try {
-      const mockResponse = {
-        accessToken: 'mock-access-token-' + Date.now(),
-        refreshToken: 'mock-refresh-token-' + Date.now(),
-        expiresIn: 3600,
-      }
-      return mockResponse
+      const response = await authService.refreshToken({ refreshToken })
+      return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Token refresh failed')
     }
   }
 )
 
-export const getCurrentUser = createAsyncThunk('auth/getCurrentUser', async (_, { rejectWithValue, getState }) => {
+export const getCurrentUser = createAsyncThunk('auth/getCurrentUser', async (_, { rejectWithValue }) => {
     try {
-      const state = getState() as any
-      const mockUser = state.auth.user || {
-        id: '1',
-        email: 'demo@example.com',
-        name: 'Demo User',
-        firstName: 'Demo',
-        lastName: 'User',
-        role: 'admin',
-        permissions: ['read', 'write', 'delete', 'admin'],
-        tenantId: 'demo-tenant',
-        tenantName: 'Demo Company',
-        language: 'en',
-        theme: 'light',
-        timezone: 'UTC',
-        isActive: true,
-        isLocked: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      return mockUser
+      const response = await authService.getCurrentUser()
+      return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user')
     }
@@ -159,6 +159,33 @@ const authSlice = createSlice({
     setIdleTimeout: (state, action: PayloadAction<number>) => {
       state.idleTimeout = action.payload
     },
+    initializeFromStorage: (state) => {
+      // Initialize auth state from storage on app load
+      const rememberMe = localStorage.getItem('remember_me') === 'true'
+      const storage = rememberMe ? localStorage : sessionStorage
+      
+      const token = storage.getItem(STORAGE_KEYS.TOKEN)
+      const refreshToken = storage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+      const userStr = storage.getItem(STORAGE_KEYS.USER)
+      
+      if (token && userStr) {
+        try {
+          state.user = JSON.parse(userStr)
+          state.accessToken = token
+          state.refreshToken = refreshToken
+          state.isAuthenticated = true
+        } catch (e) {
+          // Invalid JSON, clear storage
+          localStorage.removeItem(STORAGE_KEYS.TOKEN)
+          localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+          localStorage.removeItem(STORAGE_KEYS.USER)
+          localStorage.removeItem('remember_me')
+          sessionStorage.removeItem(STORAGE_KEYS.TOKEN)
+          sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+          sessionStorage.removeItem(STORAGE_KEYS.USER)
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -178,11 +205,21 @@ const authSlice = createSlice({
         state.error = null
         state.errorCode = null
         state.lastActivity = new Date().toISOString()
+        
+        // Persist tokens and user to secure storage
+        const storage = action.meta.arg?.rememberMe ? localStorage : sessionStorage
+        storage.setItem(STORAGE_KEYS.TOKEN, action.payload.accessToken)
+        storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, action.payload.refreshToken)
+        storage.setItem(STORAGE_KEYS.USER, JSON.stringify(action.payload.user))
+        if (action.meta.arg?.rememberMe) {
+          localStorage.setItem('remember_me', 'true')
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false
-        state.error = action.payload as string || 'Login failed'
-        state.errorCode = AuthErrorCode.INVALID_CREDENTIALS
+        const payload = action.payload as { message: string; code: AuthErrorCode }
+        state.error = payload?.message || 'Login failed'
+        state.errorCode = payload?.code || AuthErrorCode.INVALID_CREDENTIALS
       })
       // Logout
       .addCase(logout.pending, (state) => {
@@ -196,6 +233,15 @@ const authSlice = createSlice({
         state.refreshToken = null
         state.tokenExpiresAt = null
         state.lastActivity = null
+        
+        // Clear storage
+        localStorage.removeItem(STORAGE_KEYS.TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.USER)
+        localStorage.removeItem('remember_me')
+        sessionStorage.removeItem(STORAGE_KEYS.TOKEN)
+        sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+        sessionStorage.removeItem(STORAGE_KEYS.USER)
       })
       .addCase(logout.rejected, (state) => {
         state.isLoading = false
@@ -205,6 +251,15 @@ const authSlice = createSlice({
         state.accessToken = null
         state.refreshToken = null
         state.tokenExpiresAt = null
+        
+        // Clear storage
+        localStorage.removeItem(STORAGE_KEYS.TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.USER)
+        localStorage.removeItem('remember_me')
+        sessionStorage.removeItem(STORAGE_KEYS.TOKEN)
+        sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+        sessionStorage.removeItem(STORAGE_KEYS.USER)
       })
       // Refresh tokens
       .addCase(refreshTokens.pending, (state) => {
@@ -212,14 +267,21 @@ const authSlice = createSlice({
       })
       .addCase(refreshTokens.fulfilled, (state, action) => {
         state.isLoading = false
-        state.accessToken = action.payload.accessToken
-        state.refreshToken = action.payload.refreshToken
-        state.tokenExpiresAt = new Date(Date.now() + action.payload.expiresIn * 1000).toISOString()
+        const data = (action.payload as any).data || action.payload
+        state.accessToken = data.accessToken || data.access_token
+        state.refreshToken = data.refreshToken || data.refresh_token
+        state.tokenExpiresAt = new Date(Date.now() + (data.expiresIn || data.expires_in || 3600) * 1000).toISOString()
         state.lastActivity = new Date().toISOString()
+        
+        // Update persisted tokens
+        const rememberMe = localStorage.getItem('remember_me') === 'true'
+        const storage = rememberMe ? localStorage : sessionStorage
+        if (state.accessToken) storage.setItem(STORAGE_KEYS.TOKEN, state.accessToken)
+        if (state.refreshToken) storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, state.refreshToken)
       })
       .addCase(refreshTokens.rejected, (state, action) => {
         state.isLoading = false
-        state.error = action.payload as string || 'Token refresh failed'
+        state.error = (action.payload as string) || 'Token refresh failed'
         state.errorCode = AuthErrorCode.TOKEN_EXPIRED
         // Clear auth on refresh failure
         state.isAuthenticated = false
@@ -227,6 +289,15 @@ const authSlice = createSlice({
         state.accessToken = null
         state.refreshToken = null
         state.tokenExpiresAt = null
+        
+        // Clear storage
+        localStorage.removeItem(STORAGE_KEYS.TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+        localStorage.removeItem(STORAGE_KEYS.USER)
+        localStorage.removeItem('remember_me')
+        sessionStorage.removeItem(STORAGE_KEYS.TOKEN)
+        sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+        sessionStorage.removeItem(STORAGE_KEYS.USER)
       })
       // Get current user
       .addCase(getCurrentUser.pending, (state) => {
@@ -234,16 +305,32 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.isLoading = false
-        state.user = (action.payload as any)?.data || action.payload as User
+        const data = (action.payload as any).data || action.payload
+        state.user = data as User
         state.isAuthenticated = true
+        
+        // Update persisted user
+        const rememberMe = localStorage.getItem('remember_me') === 'true'
+        const storage = rememberMe ? localStorage : sessionStorage
+        storage.setItem(STORAGE_KEYS.USER, JSON.stringify(data))
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.isLoading = false
-        state.error = action.payload as string || 'Failed to fetch user'
+        state.error = (action.payload as string) || 'Failed to fetch user'
         state.errorCode = AuthErrorCode.UNAUTHORIZED
       })
   },
 })
 
-export const { setTokens, setUser, clearAuth, setError, clearError, updateLastActivity, setSessionTimeout, setIdleTimeout } = authSlice.actions
+export const { 
+  setTokens, 
+  setUser, 
+  clearAuth, 
+  setError, 
+  clearError, 
+  updateLastActivity, 
+  setSessionTimeout, 
+  setIdleTimeout,
+  initializeFromStorage
+} = authSlice.actions
 export default authSlice.reducer

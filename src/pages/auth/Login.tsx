@@ -1,30 +1,96 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
-import { useAuth } from '../../contexts/AuthContext'
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react'
+import { useAppDispatch, useAppSelector } from '../../redux/store'
+import { login, clearError } from '../../redux/slices/authSlice'
+import { AuthErrorCode } from '../../features/auth/types'
 import { Input } from '../../components/ui/input'
 import { Button } from '../../components/ui/button'
+import { cn } from '../../utils/cn'
+import { toast } from 'react-toastify'
 
 export const Login: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, isLoading, error, clearError } = useAuth()
+  const dispatch = useAppDispatch()
+  const { isLoading, error, errorCode, isAuthenticated } = useAppSelector((state) => state.auth)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
-  const from = (location.state as any)?.from?.pathname || '/dashboard'
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = (location.state as any)?.from?.pathname || '/dashboard'
+      navigate(from, { replace: true })
+    }
+  }, [isAuthenticated, navigate, location])
+
+  // Clear errors on unmount or when component mounts
+  useEffect(() => {
+    dispatch(clearError())
+  }, [dispatch])
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string): boolean => {
+    return password.length >= 8;
+  };
+
+  const getErrorMessage = (code: AuthErrorCode | null) => {
+    switch (code) {
+      case AuthErrorCode.INVALID_CREDENTIALS:
+        return 'Invalid email or password. Please try again.'
+      case AuthErrorCode.ACCOUNT_LOCKED:
+        return 'Your account has been locked. Please contact your administrator.'
+      case AuthErrorCode.ACCOUNT_INACTIVE:
+        return 'Your account is inactive. Please contact support.'
+      case AuthErrorCode.VALIDATION_ERROR:
+        return 'Too many login attempts. Please try again later.'
+      default:
+        return error || 'Login failed. Please try again.'
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    clearError()
+    dispatch(clearError())
+    setErrors({})
+
+    // Client-side validation
+    const newErrors: { email?: string; password?: string } = {};
+    
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (!validatePassword(password)) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     try {
-      await login(email, password)
+      await dispatch(login({ email, password, rememberMe })).unwrap()
+      toast.success('Login successful')
+      const from = (location.state as any)?.from?.pathname || '/dashboard'
+      navigate(from, { replace: true })
     } catch (err: any) {
-      // Error is handled by the hook
+      // Error is already handled in Redux
     }
   }
 
@@ -115,9 +181,9 @@ const itemVariants = {
               <p className="text-muted-foreground text-sm font-medium">Sign in to your account to continue.</p>
             </motion.div>
 
-            {error && (
+            {(error || errorCode) && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
-                {error}
+                {getErrorMessage(errorCode)}
               </motion.div>
             )}
 
@@ -132,11 +198,20 @@ const itemVariants = {
                     type="email"
                     placeholder="you@company.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-11 bg-background"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors({ ...errors, email: undefined });
+                    }}
+                    className={cn('pl-10 h-11 bg-background', errors.email && 'border-red-500')}
                     required
                   />
                 </div>
+                {errors.email && (
+                  <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.email}
+                  </div>
+                )}
               </motion.div>
 
               <motion.div variants={itemVariants} className="space-y-1">
@@ -149,8 +224,11 @@ const itemVariants = {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-11 bg-background"
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors({ ...errors, password: undefined });
+                    }}
+                    className={cn('pl-10 pr-10 h-11 bg-background', errors.password && 'border-red-500')}
                     required
                   />
                   <button
@@ -161,6 +239,27 @@ const itemVariants = {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {errors.password && (
+                  <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.password}
+                  </div>
+                )}
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-sm text-muted-foreground">Remember me</span>
+                </label>
+                <Link to="/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                  Forgot password?
+                </Link>
               </motion.div>
 
               <motion.div variants={itemVariants} className="pt-2">

@@ -1,7 +1,7 @@
+import { Box, Container } from '@mui/material'
 import { Outlet } from 'react-router-dom'
-import { Box, Container, Paper, Typography } from '@mui/material'
 
-export function AuthLayout() {
+export default function AuthLayout() {
   return (
     <Box
       sx={{
@@ -12,26 +12,8 @@ export function AuthLayout() {
         bgcolor: 'background.default',
       }}
     >
-      <Container maxWidth="sm">
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="h4" component="h1" gutterBottom>
-            RecoverFlow
-          </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Debt Recovery Management System
-          </Typography>
-          <Box sx={{ width: '100%', mt: 2 }}>
-            <Outlet />
-          </Box>
-        </Paper>
+      <Container maxWidth="xs">
+        <Outlet />
       </Container>
     </Box>
   )

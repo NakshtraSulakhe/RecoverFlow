@@ -80,7 +80,6 @@ export const NAVIGATION_ITEMS = [
     group: 'Main',
     items: [
       { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard', feature: FEATURE_KEYS.DASHBOARD },
-      { label: 'Global Search', path: '/search', icon: 'Search', feature: FEATURE_KEYS.DASHBOARD },
     ],
   },
   {
@@ -88,43 +87,42 @@ export const NAVIGATION_ITEMS = [
     items: [
       { label: 'Tenants', path: '/tenants', icon: 'Building2', feature: FEATURE_KEYS.SETTINGS, roles: ['platform_owner', 'tenant_admin'] },
       { label: 'Users', path: '/users', icon: 'Users', feature: FEATURE_KEYS.SETTINGS, roles: ['platform_owner', 'tenant_admin'] },
-      { label: 'All Customers', path: '/customers', icon: 'UserCircle', feature: FEATURE_KEYS.CUSTOMERS },
+      { label: 'All Customers', path: '/customers', icon: 'Users', feature: FEATURE_KEYS.CUSTOMERS },
     ],
   },
   {
     group: 'Operations',
     items: [
-      { label: 'Cases', path: '/cases', icon: 'Briefcase', feature: FEATURE_KEYS.RECOVERY },
-      { label: 'Follow-ups', path: '/recovery', icon: 'PhoneCall', feature: FEATURE_KEYS.RECOVERY },
-      { label: 'Workflows', path: '/workflows', icon: 'Workflow', feature: FEATURE_KEYS.WORKFLOWS },
-    ],
-  },
-  {
-    group: 'AI & Analytics',
-    items: [
-      { label: 'AI Assistant', path: '/ai-assistant', icon: 'Bot', feature: FEATURE_KEYS.AI_ASSISTANT },
-      { label: 'Reports', path: '/reports', icon: 'BarChart3', feature: FEATURE_KEYS.REPORTS },
+      { label: 'Cases', path: '/cases', icon: 'Scale', feature: FEATURE_KEYS.RECOVERY },
+      { label: 'Recovery Actions', path: '/recovery', icon: 'RefreshCw', feature: FEATURE_KEYS.RECOVERY },
+      { label: 'Priority Scoring', path: '/priority-scoring', icon: 'TrendingUp', feature: FEATURE_KEYS.RECOVERY },
+      { label: 'PTP Tracker', path: '/ptp-tracker', icon: 'Calendar', feature: FEATURE_KEYS.RECOVERY },
     ],
   },
   {
     group: 'Communication',
     items: [
-      { label: 'Messages', path: '/messages', icon: 'MessageSquare', feature: FEATURE_KEYS.COMMUNICATION },
-      { label: 'Campaigns', path: '/campaigns', icon: 'Megaphone', feature: FEATURE_KEYS.COMMUNICATION },
+      { label: 'Smart Dialer', path: '/smart-dialer', icon: 'Phone', feature: FEATURE_KEYS.COMMUNICATION },
+      { label: 'WhatsApp Recovery', path: '/whatsapp-recovery', icon: 'MessageSquare', feature: FEATURE_KEYS.COMMUNICATION },
+      { label: 'Omnichannel Timeline', path: '/omnichannel', icon: 'History', feature: FEATURE_KEYS.COMMUNICATION },
     ],
   },
   {
-    group: 'Payments',
+    group: 'Finance',
     items: [
       { label: 'Payments', path: '/payments', icon: 'CreditCard', feature: FEATURE_KEYS.PAYMENTS },
-      { label: 'Settlements', path: '/settlements', icon: 'FileText', feature: FEATURE_KEYS.PAYMENTS },
     ],
   },
   {
-    group: 'Legal',
+    group: 'Analytics',
     items: [
-      { label: 'Legal Cases', path: '/legal', icon: 'Scale', feature: FEATURE_KEYS.LEGAL },
-      { label: 'Documents', path: '/documents', icon: 'FileText', feature: FEATURE_KEYS.LEGAL },
+      { label: 'Reports', path: '/reports', icon: 'BarChart3', feature: FEATURE_KEYS.REPORTS },
+    ],
+  },
+  {
+    group: 'AI',
+    items: [
+      { label: 'AI Assistant', path: '/ai', icon: 'Bot', feature: FEATURE_KEYS.AI_ASSISTANT },
     ],
   },
   {

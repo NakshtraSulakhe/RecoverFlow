@@ -9,23 +9,22 @@ const Cases = lazy(() => import('../pages/cases/Cases'))
 const Recovery = lazy(() => import('../pages/recovery/Recovery'))
 const Payments = lazy(() => import('../pages/payments/Payments'))
 const Reports = lazy(() => import('../pages/reports/Reports'))
-const Settings = lazy(() => import('../pages/settings/Settings'))
+const Settings = lazy(() => import('../pages/settings/PlatformSettings'))
 const AI = lazy(() => import('../pages/ai/AI'))
 const PriorityScoring = lazy(() => import('../pages/priority-scoring/PriorityScoring'))
 const PTPTracker = lazy(() => import('../pages/ptp-tracker/PTPTracker'))
-const SmartDialer = lazy(() => import('../pages/smart-dialer/SmartDialer'))
-const WhatsAppRecovery = lazy(() => import('../pages/whatsapp-recovery/WhatsAppRecovery'))
-const OmnichannelTimeline = lazy(() => import('../pages/omnichannel/OmnichannelTimeline'))
+const Profile = lazy(() => import('../pages/profile/Profile'))
 
 // Auth pages
 const Login = lazy(() => import('../pages/auth/Login'))
-const Register = lazy(() => import('../pages/auth/Register'))
 const ForgotPassword = lazy(() => import('../pages/auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('../pages/auth/ResetPassword'))
 const SessionExpired = lazy(() => import('../pages/auth/SessionExpired'))
 const Unauthorized = lazy(() => import('../pages/auth/Unauthorized'))
 const AccountLocked = lazy(() => import('../pages/auth/AccountLocked'))
 const PasswordExpired = lazy(() => import('../pages/auth/PasswordExpired'))
+const NotFound = lazy(() => import('../pages/auth/NotFound'))
+const ServerError = lazy(() => import('../pages/auth/ServerError'))
 
 // Tenant settings pages
 const TenantProfile = lazy(() => import('../pages/settings/TenantProfile'))
@@ -46,10 +45,6 @@ export const publicRoutes = [
   {
     path: '/login',
     element: <Login />,
-  },
-  {
-    path: '/register',
-    element: <Register />,
   },
   {
     path: '/forgot-password',
@@ -86,6 +81,10 @@ export const protectedRoutes = [
   {
     path: '/dashboard',
     element: <Dashboard />,
+  },
+  {
+    path: '/profile',
+    element: <Profile />,
   },
   {
     path: '/tenants',
@@ -138,18 +137,6 @@ export const protectedRoutes = [
   {
     path: '/ptp-tracker',
     element: <PTPTracker />,
-  },
-  {
-    path: '/smart-dialer',
-    element: <SmartDialer />,
-  },
-  {
-    path: '/whatsapp-recovery',
-    element: <WhatsAppRecovery />,
-  },
-  {
-    path: '/omnichannel',
-    element: <OmnichannelTimeline />,
   },
   // Tenant settings routes
   {

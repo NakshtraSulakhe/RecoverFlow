@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   Bell,
   Search,
@@ -10,6 +11,8 @@ import {
   ChevronDown,
   Menu,
   Plus,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,6 +28,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user, logout, hasPermission } = useAuth();
+  const { mode, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -60,6 +64,15 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         {/* Right Side */}
         <div className="flex items-center gap-2">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="rounded-lg p-2 text-zinc-400 hover:bg-white/5 hover:text-white transition-colors"
+            title="Toggle theme"
+          >
+            {mode === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+
           {/* Quick Create Button */}
           {hasPermission('customers.create') && (
             <button

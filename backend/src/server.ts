@@ -15,6 +15,9 @@ import { requestLogger } from './middleware/requestLogger';
 
 import { authRoutes } from './routes/auth.routes';
 import { tenantRoutes } from './routes/tenant.routes';
+import { subscriptionRoutes } from './routes/subscription.routes';
+import { moduleRoutes } from './routes/module.routes';
+import { tenantModuleRoutes } from './routes/tenant-module.routes';
 import { userRoutes } from './routes/user.routes';
 import { customerRoutes } from './routes/customer.routes';
 import { loanRoutes } from './routes/loan.routes';
@@ -31,7 +34,7 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: config.cors.origin,
+  origin: config.env === 'development' ? '*' : config.cors.origin,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID']
@@ -121,6 +124,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // API Routes
 app.use(`${config.apiPrefix}/auth`, authRoutes);
 app.use(`${config.apiPrefix}/tenants`, tenantRoutes);
+app.use(`${config.apiPrefix}/subscriptions`, subscriptionRoutes);
+app.use(`${config.apiPrefix}/modules`, moduleRoutes);
+app.use(`${config.apiPrefix}/tenant-modules`, tenantModuleRoutes);
 app.use(`${config.apiPrefix}/users`, userRoutes);
 app.use(`${config.apiPrefix}/customers`, customerRoutes);
 app.use(`${config.apiPrefix}/loans`, loanRoutes);

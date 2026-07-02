@@ -75,40 +75,64 @@ class AuthController {
       throw new AppError('Email and password are required', 400);
     }
 
-    // TODO: Find user by email
-    // const user = await userRepository.findByEmail(email);
-    // if (!user) {
-    //   throw new AppError('Invalid credentials', 401);
-    // }
+    // Find user by email
+    const userResult = await query(
+      'SELECT id, tenant_id, first_name, last_name, email, password_hash, user_type, is_active FROM users WHERE email = $1 AND is_active = true',
+      [email]
+    );
 
-    // TODO: Verify password
-    // const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    // if (!isValidPassword) {
-    //   throw new AppError('Invalid credentials', 401);
-    // }
+    if (userResult.rows.length === 0) {
+      throw new AppError('Invalid credentials', 401);
+    }
 
-    // Mock user for now
-    const user = {
-      id: uuidv4(),
-      tenant_id: uuidv4(),
-      email,
-      first_name: 'Demo',
-      last_name: 'User',
-      user_type: 'recovery_agent',
-      status: 'active',
+    const user = userResult.rows[0];
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    if (!isValidPassword) {
+      throw new AppError('Invalid credentials', 401);
+    }
+
+    const userData = {
+      id: user.id,
+      tenant_id: user.tenant_id,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      user_type: user.user_type,
+      status: user.is_active ? 'active' : 'inactive' as const,
+      created_at: new Date(),
+      updated_at: new Date(),
     };
 
-    const access_token = this.generateAccessToken(user);
-    const refresh_token = this.generateRefreshToken(user);
+    // Handle platform_owner (super admin) - no tenant
+    let tenant = null;
+    if (user.tenant_id && user.user_type !== 'platform_owner') {
+      const tenantResult = await query(
+        'SELECT id, tenant_name, tenant_code, subscription_tier, features FROM tenants WHERE id = $1',
+        [user.tenant_id]
+      );
 
-    logger.info('User logged in successfully', { userId: user.id, email });
+      tenant = tenantResult.rows[0] || {
+        id: user.tenant_id,
+        tenant_name: 'Default Tenant',
+        tenant_code: 'DEFAULT',
+        subscription_tier: 'basic',
+        features: {},
+      };
+    }
+
+    const access_token = this.generateAccessToken(userData);
+    const refresh_token = this.generateRefreshToken(userData);
+
+    logger.info('User logged in successfully', { userId: user.id, email, userType: user.user_type });
 
     res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
-        user,
-        tenant: { id: user.tenant_id, tenant_name: 'Demo Tenant' },
+        user: userData,
+        tenant: tenant,
         access_token,
         refresh_token,
         expires_in: 900,
@@ -178,10 +202,20 @@ class AuthController {
 
     const user = userResult.rows[0];
 
+    // Include tenant info if not platform_owner
+    let tenant = null;
+    if (user.tenant_id && user.user_type !== 'platform_owner') {
+      const tenantResult = await query(
+        'SELECT id, tenant_name, tenant_code, subscription_tier, features FROM tenants WHERE id = $1',
+        [user.tenant_id]
+      );
+      tenant = tenantResult.rows[0] || null;
+    }
+
     res.status(200).json({
       success: true,
       message: 'User retrieved successfully',
-      data: user,
+      data: { ...user, tenant },
     } as ApiResponse);
   });
 

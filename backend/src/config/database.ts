@@ -1,19 +1,35 @@
 import { Pool, PoolClient } from 'pg';
-import { config } from './index';
 import { logger } from '../utils/logger';
+import dotenv from 'dotenv';
+import path from 'path';
 
-const pool = new Pool({
-  host: config.database.host,
-  port: config.database.port,
-  database: config.database.name,
-  user: config.database.user,
-  password: config.database.password,
-  ssl: config.database.ssl ? { rejectUnauthorized: false } : false,
-  min: config.database.poolMin,
-  max: config.database.poolMax,
+// Load environment variables explicitly from .env.development
+const envPath = path.resolve(__dirname, '../../.env.development');
+dotenv.config({ path: envPath });
+
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+  database: process.env.DB_NAME || 'recoverflow_dev',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  ssl: false,
+  min: 1,
+  max: 5,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
+};
+
+logger.info('Database config loaded', {
+  host: dbConfig.host,
+  port: dbConfig.port,
+  database: dbConfig.database,
+  user: dbConfig.user,
+  hasPassword: !!dbConfig.password,
+  envPath: envPath,
 });
+
+const pool = new Pool(dbConfig);
 
 pool.on('connect', () => {
   logger.info('New database client connected');

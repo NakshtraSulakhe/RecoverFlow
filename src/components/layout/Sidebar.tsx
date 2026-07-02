@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -8,12 +8,52 @@ import {
   ChevronDown, 
   ChevronUp 
 } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
 import { setSidebarOpen, setSidebarCollapsed } from '../../redux/slices/uiSlice'
 import { SidebarItem } from './SidebarItem'
-import { navigationGroups } from '../../constants/navigation'
+import { platformNavItems } from '../../modules/platform/constants/navigation'
+import { tenantNavItems } from '../../modules/tenant/constants/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '../../utils/cn'
+import { useAuth } from '../../features/auth/hooks/useAuth'
+
+// Create navigation groups for both layouts
+const createNavigationGroups = (items: any[]) => [
+  {
+    group: 'Main',
+    items: items.slice(0, 3).map(item => ({
+      ...item,
+      label: item.text,
+    })),
+  },
+  {
+    group: 'Management',
+    items: items.slice(3, 8).map(item => ({
+      ...item,
+      label: item.text,
+    })),
+  },
+  {
+    group: 'Settings',
+    items: items.slice(8).map(item => ({
+      ...item,
+      label: item.text,
+    })),
+  },
+]
+
+// Filter navigation items based on user role and permissions
+const filterNavItems = (items: any[], userRole: string) => {
+  if (userRole === 'platform_owner') {
+    return items // Platform owner sees all platform items
+  }
+  
+  // For tenant users, you could add subscription/feature flag filtering here
+  return items
+}
+
+
 
 export interface SidebarProps {
   onToggle?: () => void
@@ -24,12 +64,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggle,
   onCollapse,
 }) => {
+  const location = useLocation()
+  const { user } = useAuth()
+  const isPlatform = location.pathname.startsWith('/platform')
+  
+  // Select nav items based on route
+  const currentNavItems = useMemo(() => {
+    const items = isPlatform ? platformNavItems : tenantNavItems
+    return filterNavItems(items, user?.user_type || '')
+  }, [isPlatform, user?.user_type])
+  
+  const navigationGroups = useMemo(() => createNavigationGroups(currentNavItems), [currentNavItems])
+  
   const dispatch = useAppDispatch()
   const sidebarOpen = useAppSelector((state) => (state as any).ui.sidebarOpen)
   const sidebarCollapsed = useAppSelector((state) => (state as any).ui.sidebarCollapsed)
   const [expandedGroups, setExpandedGroups] = useState<string[]>(
     navigationGroups.map((g) => g.group)
   )
+  
+  // Also update brand header to reflect platform vs tenant
+  const brandName = isPlatform ? 'RecoverFlow Platform' : 'RecoverFlow'
 
   const handleToggle = () => {
     dispatch(setSidebarOpen(!sidebarOpen))
@@ -48,10 +103,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const drawerContent = (
-    <div className="flex h-full w-full flex-col sidebar-bg border-r border-white/5 transition-colors duration-250 select-none">
+    <div className="flex h-full w-full flex-col sidebar-bg border-r border-border transition-colors duration-250 select-none">
       {/* Brand Header */}
       <div className={cn(
-        "flex items-center px-4 py-3 min-h-[64px] border-b border-white/5 transition-all",
+        "flex items-center px-4 py-3 min-h-[64px] border-b border-border transition-all",
         sidebarCollapsed ? "justify-center" : "justify-between"
       )}>
         {!sidebarCollapsed ? (
@@ -60,8 +115,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               RF
             </div>
             <div>
-              <h1 className="text-sm font-bold leading-none text-white">RecoverFlow</h1>
-              <span className="text-[10px] text-indigo-300/70 font-semibold">Enterprise</span>
+              <h1 className="text-sm font-bold leading-none text-foreground">{brandName}</h1>
+              <span className="text-[10px] text-indigo-400/70 font-semibold dark:text-indigo-300/70">
+                {isPlatform ? 'Platform Admin' : 'Enterprise'}
+              </span>
             </div>
           </div>
         ) : (
@@ -73,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {!sidebarCollapsed && (
           <button
             onClick={handleCollapse}
-            className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white active:scale-95 transition-all"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground active:scale-95 transition-all"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -83,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Development Label */}
       {!sidebarCollapsed && (
         <div className="px-4 py-2">
-          <span className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-xs font-semibold text-amber-300">
+          <span className="inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
             Development
           </span>
         </div>
@@ -98,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {!sidebarCollapsed ? (
                 <div
                   onClick={() => handleGroupToggle(group.group)}
-                  className="flex items-center justify-between px-5 py-1.5 text-[10px] font-bold tracking-wider text-zinc-500 uppercase cursor-pointer hover:text-zinc-300 transition-colors group"
+                  className="flex items-center justify-between px-5 py-1.5 text-[10px] font-bold tracking-wider text-muted-foreground uppercase cursor-pointer hover:text-foreground transition-colors group"
                 >
                   <span>{group.group}</span>
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -106,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </span>
                 </div>
               ) : (
-                <div className="border-t border-white/5 my-2" />
+                <div className="border-t border-border my-2" />
               )}
               
               <AnimatePresence initial={false}>
@@ -121,7 +178,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {group.items.map((item) => (
                       <SidebarItem
                         key={item.path}
-                        icon={item.icon}
+                        icon={<item.icon className="h-5 w-5" />}
                         label={item.label}
                         path={item.path}
                         collapsed={sidebarCollapsed}
@@ -137,8 +194,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Quick Access List */}
       {!sidebarCollapsed && (
-        <div className="border-t border-white/5 px-2 py-3 space-y-1">
-          <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-zinc-500 uppercase">
+        <div className="border-t border-border px-2 py-3 space-y-1">
+          <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
             Quick Access
           </div>
           <SidebarItem icon={<Star className="h-4 w-4" />} label="Favorites" collapsed={false} />
@@ -148,16 +205,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Collapse Footer Toggle */}
       <div className={cn(
-        "border-t border-white/5 p-3 flex items-center justify-between",
+        "border-t border-border p-3 flex items-center justify-between",
         sidebarCollapsed ? "justify-center" : "justify-between"
       )}>
         {!sidebarCollapsed && (
-          <span className="text-xs text-zinc-600 font-semibold">v1.0.0</span>
+          <span className="text-xs text-muted-foreground font-semibold">v1.0.0</span>
         )}
         <button
           onClick={handleToggle}
           title="Toggle Sidebar"
-          className="rounded-lg p-2 text-zinc-400 hover:bg-white/10 hover:text-white active:scale-95 transition-all"
+          className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground active:scale-95 transition-all"
         >
           <Menu className="h-4 w-4" />
         </button>
