@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { DataPageLayout } from '../../components/common/DataPageLayout';
 import { toast } from 'react-hot-toast';
-import { authFetch } from '../../utils/api';
+import axiosInstance from '../../services/axios/axios.config';
 
 interface User {
   id: string;
@@ -123,12 +123,11 @@ export default function Users() {
     setLoading(true);
     setError(null);
     try {
-      const response = await authFetch('/api/v1/user-provisioning/provisioning');
-      const data = await response.json();
-      if (data.success) {
-        setUsers(data.data);
+      const response = await axiosInstance.get('/user-provisioning/provisioning');
+      if (response.data.success) {
+        setUsers(response.data.data);
       } else {
-        setError(data.message || 'Failed to load users');
+        setError(response.data.message || 'Failed to load users');
       }
     } catch (err) {
       setError('Failed to load users');
@@ -139,10 +138,9 @@ export default function Users() {
 
   const loadDepartments = async () => {
     try {
-      const response = await authFetch('/api/v1/departments');
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const response = await axiosInstance.get('/departments');
+      if (response.data.success) {
+        setDepartments(response.data.data);
       }
     } catch (err) {
       console.error('Failed to load departments');
@@ -151,10 +149,9 @@ export default function Users() {
 
   const loadTeams = async () => {
     try {
-      const response = await authFetch('/api/v1/teams');
-      const data = await response.json();
-      if (data.success) {
-        setTeams(data.data);
+      const response = await axiosInstance.get('/teams');
+      if (response.data.success) {
+        setTeams(response.data.data);
       }
     } catch (err) {
       console.error('Failed to load teams');
@@ -163,10 +160,9 @@ export default function Users() {
 
   const loadRoles = async () => {
     try {
-      const response = await authFetch('/api/v1/roles');
-      const data = await response.json();
-      if (data.success) {
-        setRoles(data.data);
+      const response = await axiosInstance.get('/roles');
+      if (response.data.success) {
+        setRoles(response.data.data);
       }
     } catch (err) {
       console.error('Failed to load roles');
@@ -229,15 +225,11 @@ export default function Users() {
     if (!selectedUser) return;
     handleMenuClose();
     try {
-      const response = await authFetch(`/api/v1/user-provisioning/provisioning/${selectedUser.id}/reset-password`, {
-        method: 'POST',
-        body: JSON.stringify({ send_email: true }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.post(`/user-provisioning/provisioning/${selectedUser.id}/reset-password`, { send_email: true });
+      if (response.data.success) {
         toast.success('Password reset email sent');
       } else {
-        toast.error(data.message || 'Failed to reset password');
+        toast.error(response.data.message || 'Failed to reset password');
       }
     } catch (err) {
       toast.error('Failed to reset password');
@@ -249,15 +241,12 @@ export default function Users() {
     const newStatus = selectedUser.status === 'active' ? 'locked' : 'active';
     try {
       const endpoint = newStatus === 'locked' ? 'lock' : 'unlock';
-      const response = await authFetch(`/api/v1/user-provisioning/provisioning/${selectedUser.id}/${endpoint}`, {
-        method: 'PATCH',
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.patch(`/user-provisioning/provisioning/${selectedUser.id}/${endpoint}`);
+      if (response.data.success) {
         toast.success(`User ${newStatus === 'locked' ? 'locked' : 'unlocked'} successfully`);
         loadUsers();
       } else {
-        toast.error(data.message || 'Failed to update user status');
+        toast.error(response.data.message || 'Failed to update user status');
       }
     } catch (err) {
       toast.error('Failed to update user status');
@@ -268,15 +257,12 @@ export default function Users() {
   const confirmDelete = async () => {
     if (!selectedUser) return;
     try {
-      const response = await authFetch(`/api/v1/user-provisioning/provisioning/${selectedUser.id}`, {
-        method: 'DELETE',
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.delete(`/user-provisioning/provisioning/${selectedUser.id}`);
+      if (response.data.success) {
         toast.success('User deleted successfully');
         loadUsers();
       } else {
-        toast.error(data.message || 'Failed to delete user');
+        toast.error(response.data.message || 'Failed to delete user');
       }
     } catch (err) {
       toast.error('Failed to delete user');
@@ -287,17 +273,13 @@ export default function Users() {
 
   const handleCreateUser = async () => {
     try {
-      const response = await authFetch('/api/v1/user-provisioning/provisioning', {
-        method: 'POST',
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.post('/user-provisioning/provisioning', formData);
+      if (response.data.success) {
         toast.success('User created successfully');
         setAddDialogOpen(false);
         loadUsers();
       } else {
-        toast.error(data.message || 'Failed to create user');
+        toast.error(response.data.message || 'Failed to create user');
       }
     } catch (err) {
       toast.error('Failed to create user');
@@ -307,17 +289,13 @@ export default function Users() {
   const handleUpdateUser = async () => {
     if (!selectedUser) return;
     try {
-      const response = await authFetch(`/api/v1/user-provisioning/provisioning/${selectedUser.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.put(`/user-provisioning/provisioning/${selectedUser.id}`, formData);
+      if (response.data.success) {
         toast.success('User updated successfully');
         setEditDialogOpen(false);
         loadUsers();
       } else {
-        toast.error(data.message || 'Failed to update user');
+        toast.error(response.data.message || 'Failed to update user');
       }
     } catch (err) {
       toast.error('Failed to update user');

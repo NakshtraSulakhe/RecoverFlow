@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { DataPageLayout } from '../../components/common/DataPageLayout';
 import { toast } from 'react-hot-toast';
-import { authFetch } from '../../utils/api';
+import axiosInstance from '../../services/axios/axios.config';
 
 interface Department {
   id: string;
@@ -74,12 +74,11 @@ export default function Departments() {
     setLoading(true);
     setError(null);
     try {
-      const response = await authFetch('/api/v1/departments');
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const response = await axiosInstance.get('/departments');
+      if (response.data.success) {
+        setDepartments(response.data.data);
       } else {
-        setError(data.message || 'Failed to load departments');
+        setError(response.data.message || 'Failed to load departments');
       }
     } catch (err) {
       setError('Failed to load departments');
@@ -123,16 +122,12 @@ export default function Departments() {
   const handleToggleStatus = async () => {
     if (!selectedDepartment) return;
     try {
-      const response = await authFetch(`/api/v1/departments/${selectedDepartment.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ is_active: !selectedDepartment.is_active }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.put(`/departments/${selectedDepartment.id}`, { is_active: !selectedDepartment.is_active });
+      if (response.data.success) {
         toast.success(`Department ${selectedDepartment.is_active ? 'deactivated' : 'activated'} successfully`);
         loadDepartments();
       } else {
-        toast.error(data.message || 'Failed to update department status');
+        toast.error(response.data.message || 'Failed to update department status');
       }
     } catch (err) {
       toast.error('Failed to update department status');
@@ -143,15 +138,12 @@ export default function Departments() {
   const confirmDelete = async () => {
     if (!selectedDepartment) return;
     try {
-      const response = await authFetch(`/api/v1/departments/${selectedDepartment.id}`, {
-        method: 'DELETE',
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.delete(`/departments/${selectedDepartment.id}`);
+      if (response.data.success) {
         toast.success('Department deleted successfully');
         loadDepartments();
       } else {
-        toast.error(data.message || 'Failed to delete department');
+        toast.error(response.data.message || 'Failed to delete department');
       }
     } catch (err) {
       toast.error('Failed to delete department');
@@ -162,17 +154,13 @@ export default function Departments() {
 
   const handleCreateDepartment = async () => {
     try {
-      const response = await authFetch('/api/v1/departments', {
-        method: 'POST',
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.post('/departments', formData);
+      if (response.data.success) {
         toast.success('Department created successfully');
         setAddDialogOpen(false);
         loadDepartments();
       } else {
-        toast.error(data.message || 'Failed to create department');
+        toast.error(response.data.message || 'Failed to create department');
       }
     } catch (err) {
       toast.error('Failed to create department');
@@ -182,17 +170,13 @@ export default function Departments() {
   const handleUpdateDepartment = async () => {
     if (!selectedDepartment) return;
     try {
-      const response = await authFetch(`/api/v1/departments/${selectedDepartment.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.put(`/departments/${selectedDepartment.id}`, formData);
+      if (response.data.success) {
         toast.success('Department updated successfully');
         setEditDialogOpen(false);
         loadDepartments();
       } else {
-        toast.error(data.message || 'Failed to update department');
+        toast.error(response.data.message || 'Failed to update department');
       }
     } catch (err) {
       toast.error('Failed to update department');
@@ -208,7 +192,7 @@ export default function Departments() {
     name: (
       <Box display="flex" alignItems="center" gap={2}>
         <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.50' }}>
-          <Building2 sx={{ fontSize: 20 }} />
+          <Building2 size={20} />
         </Avatar>
         <Box>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>{department.name}</Typography>
@@ -227,12 +211,12 @@ export default function Departments() {
         label={department.is_active ? 'Active' : 'Inactive'}
         size="small"
         color={department.is_active ? 'success' : 'error'}
-        icon={department.is_active ? <CheckCircle sx={{ fontSize: 14 }} /> : <XCircle sx={{ fontSize: 14 }} />}
+        icon={department.is_active ? <CheckCircle size={14} /> : <XCircle size={14} />}
       />
     ),
     actions: (
       <IconButton onClick={(e) => handleMenuClick(e, department)} size="small">
-        <MoreVertical sx={{ fontSize: 18 }} />
+        <MoreVertical size={18} />
       </IconButton>
     ),
   });
@@ -245,11 +229,11 @@ export default function Departments() {
         columns={columns}
         data={filteredDepartments}
         renderRow={renderRow}
-        primaryAction={{ label: 'Add Department', onClick: handleAddDepartment, icon: Plus }}
+        primaryAction={{ label: 'Add Department', onClick: handleAddDepartment }}
         searchPlaceholder="Search departments by name or description..."
         onSearch={setSearchQuery}
         emptyState={{
-          icon: <Network sx={{ fontSize: 48, color: 'text.disabled' }} />,
+          icon: <Network size={48} />,
           title: 'No departments yet',
           description: 'Create departments to organize your organizational structure.',
           actionLabel: 'Add Department',
@@ -266,24 +250,24 @@ export default function Departments() {
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <MenuItem onClick={handleEditDepartment}>
-          <Edit sx={{ fontSize: 16, mr: 2 }} />
+          <Edit size={16} style={{ marginRight: 8 }} />
           Edit Department
         </MenuItem>
         <MenuItem onClick={handleToggleStatus}>
           {selectedDepartment?.is_active ? (
             <>
-              <XCircle sx={{ fontSize: 16, mr: 2 }} />
+              <XCircle size={16} style={{ marginRight: 8 }} />
               Deactivate Department
             </>
           ) : (
             <>
-              <CheckCircle sx={{ fontSize: 16, mr: 2 }} />
+              <CheckCircle size={16} style={{ marginRight: 8 }} />
               Activate Department
             </>
           )}
         </MenuItem>
         <MenuItem onClick={handleDeleteDepartment} sx={{ color: 'error.main' }}>
-          <Trash2 sx={{ fontSize: 16, mr: 2 }} />
+          <Trash2 size={16} style={{ marginRight: 8 }} />
           Delete Department
         </MenuItem>
       </Menu>

@@ -7,6 +7,7 @@ declare global {
     interface Request {
       tenantId?: string;
       tenantCode?: string;
+      user?: any;
     }
   }
 }
@@ -17,8 +18,10 @@ export const tenantMiddleware = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Get tenant ID from header or query parameter
-    const tenantId = req.headers['x-tenant-id'] as string || req.query.tenant_id as string;
+    // Get tenant ID from header, query parameter, or user object (from JWT)
+    let tenantId = req.headers['x-tenant-id'] as string || 
+                   req.query.tenant_id as string ||
+                   req.user?.tenant_id;
     
     if (!tenantId) {
       throw new AppError('Tenant ID is required', 400);
@@ -32,6 +35,12 @@ export const tenantMiddleware = async (
 
     // Store tenant ID in request
     req.tenantId = tenantId;
+    
+    // Also set it on user object for controllers that expect it there
+    if (!req.user) {
+      req.user = {};
+    }
+    req.user.tenant_id = tenantId;
 
     // TODO: Add tenant validation from database
     // const tenant = await getTenantById(tenantId);

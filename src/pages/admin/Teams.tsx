@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { DataPageLayout } from '../../components/common/DataPageLayout';
 import { toast } from 'react-hot-toast';
-import { authFetch } from '../../utils/api';
+import axiosInstance from '../../services/axios/axios.config';
 
 interface Team {
   id: string;
@@ -94,12 +94,11 @@ export default function Teams() {
     setLoading(true);
     setError(null);
     try {
-      const response = await authFetch('/api/v1/teams');
-      const data = await response.json();
-      if (data.success) {
-        setTeams(data.data);
+      const response = await axiosInstance.get('/teams');
+      if (response.data.success) {
+        setTeams(response.data.data);
       } else {
-        setError(data.message || 'Failed to load teams');
+        setError(response.data.message || 'Failed to load teams');
       }
     } catch (err) {
       setError('Failed to load teams');
@@ -110,10 +109,9 @@ export default function Teams() {
 
   const loadDepartments = async () => {
     try {
-      const response = await authFetch('/api/v1/departments');
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const response = await axiosInstance.get('/departments');
+      if (response.data.success) {
+        setDepartments(response.data.data);
       }
     } catch (err) {
       console.error('Failed to load departments');
@@ -157,16 +155,12 @@ export default function Teams() {
   const handleToggleStatus = async () => {
     if (!selectedTeam) return;
     try {
-      const response = await authFetch(`/api/v1/teams/${selectedTeam.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ is_active: !selectedTeam.is_active }),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.put(`/teams/${selectedTeam.id}`, { is_active: !selectedTeam.is_active });
+      if (response.data.success) {
         toast.success(`Team ${selectedTeam.is_active ? 'deactivated' : 'activated'} successfully`);
         loadTeams();
       } else {
-        toast.error(data.message || 'Failed to update team status');
+        toast.error(response.data.message || 'Failed to update team status');
       }
     } catch (err) {
       toast.error('Failed to update team status');
@@ -177,15 +171,12 @@ export default function Teams() {
   const confirmDelete = async () => {
     if (!selectedTeam) return;
     try {
-      const response = await authFetch(`/api/v1/teams/${selectedTeam.id}`, {
-        method: 'DELETE',
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.delete(`/teams/${selectedTeam.id}`);
+      if (response.data.success) {
         toast.success('Team deleted successfully');
         loadTeams();
       } else {
-        toast.error(data.message || 'Failed to delete team');
+        toast.error(response.data.message || 'Failed to delete team');
       }
     } catch (err) {
       toast.error('Failed to delete team');
@@ -196,17 +187,13 @@ export default function Teams() {
 
   const handleCreateTeam = async () => {
     try {
-      const response = await authFetch('/api/v1/teams', {
-        method: 'POST',
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.post('/teams', formData);
+      if (response.data.success) {
         toast.success('Team created successfully');
         setAddDialogOpen(false);
         loadTeams();
       } else {
-        toast.error(data.message || 'Failed to create team');
+        toast.error(response.data.message || 'Failed to create team');
       }
     } catch (err) {
       toast.error('Failed to create team');
@@ -216,17 +203,13 @@ export default function Teams() {
   const handleUpdateTeam = async () => {
     if (!selectedTeam) return;
     try {
-      const response = await authFetch(`/api/v1/teams/${selectedTeam.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      if (data.success) {
+      const response = await axiosInstance.put(`/teams/${selectedTeam.id}`, formData);
+      if (response.data.success) {
         toast.success('Team updated successfully');
         setEditDialogOpen(false);
         loadTeams();
       } else {
-        toast.error(data.message || 'Failed to update team');
+        toast.error(response.data.message || 'Failed to update team');
       }
     } catch (err) {
       toast.error('Failed to update team');
@@ -243,7 +226,7 @@ export default function Teams() {
     name: (
       <Box display="flex" alignItems="center" gap={2}>
         <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.50' }}>
-          <UsersRound sx={{ fontSize: 20 }} />
+          <UsersRound size={20} />
         </Avatar>
         <Box>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>{team.name}</Typography>
@@ -256,7 +239,7 @@ export default function Teams() {
     ),
     department: (
       <Box display="flex" alignItems="center" gap={1}>
-        <Building2 sx={{ fontSize: 16, color: 'text.secondary' }} />
+        <Building2 size={16} style={{ color: 'text.secondary' }} />
         <Typography variant="body2">{team.department_name || '-'}</Typography>
       </Box>
     ),
@@ -272,12 +255,12 @@ export default function Teams() {
         label={team.is_active ? 'Active' : 'Inactive'}
         size="small"
         color={team.is_active ? 'success' : 'error'}
-        icon={team.is_active ? <CheckCircle sx={{ fontSize: 14 }} /> : <XCircle sx={{ fontSize: 14 }} />}
+        icon={team.is_active ? <CheckCircle size={14} /> : <XCircle size={14} />}
       />
     ),
     actions: (
       <IconButton onClick={(e) => handleMenuClick(e, team)} size="small">
-        <MoreVertical sx={{ fontSize: 18 }} />
+        <MoreVertical size={18} />
       </IconButton>
     ),
   });
@@ -290,11 +273,11 @@ export default function Teams() {
         columns={columns}
         data={filteredTeams}
         renderRow={renderRow}
-        primaryAction={{ label: 'Add Team', onClick: handleAddTeam, icon: Plus }}
+        primaryAction={{ label: 'Add Team', onClick: handleAddTeam }}
         searchPlaceholder="Search teams by name, description, or department..."
         onSearch={setSearchQuery}
         emptyState={{
-          icon: <UsersRound sx={{ fontSize: 48, color: 'text.disabled' }} />,
+          icon: <UsersRound size={48} />,
           title: 'No teams yet',
           description: 'Create teams to organize your workforce and assign recovery cases.',
           actionLabel: 'Add Team',
@@ -311,24 +294,24 @@ export default function Teams() {
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <MenuItem onClick={handleEditTeam}>
-          <Edit sx={{ fontSize: 16, mr: 2 }} />
+          <Edit size={16} style={{ marginRight: 8 }} />
           Edit Team
         </MenuItem>
         <MenuItem onClick={handleToggleStatus}>
           {selectedTeam?.is_active ? (
             <>
-              <XCircle sx={{ fontSize: 16, mr: 2 }} />
+              <XCircle size={16} style={{ marginRight: 8 }} />
               Deactivate Team
             </>
           ) : (
             <>
-              <CheckCircle sx={{ fontSize: 16, mr: 2 }} />
+              <CheckCircle size={16} style={{ marginRight: 8 }} />
               Activate Team
             </>
           )}
         </MenuItem>
         <MenuItem onClick={handleDeleteTeam} sx={{ color: 'error.main' }}>
-          <Trash2 sx={{ fontSize: 16, mr: 2 }} />
+          <Trash2 size={16} style={{ marginRight: 8 }} />
           Delete Team
         </MenuItem>
       </Menu>

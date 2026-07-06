@@ -67,7 +67,7 @@ export const DataPageLayout: React.FC<DataPageLayoutProps> = ({
         {primaryAction && (
           <Button
             variant="contained"
-            startIcon={primaryAction.icon}
+            startIcon={primaryAction.icon ? <primaryAction.icon size={18} /> : undefined}
             onClick={primaryAction.onClick}
           >
             {primaryAction.label}

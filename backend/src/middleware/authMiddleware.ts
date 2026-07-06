@@ -11,6 +11,7 @@ declare global {
       userId?: string;
       userEmail?: string;
       userType?: string;
+      user?: any;
     }
   }
 }
@@ -37,8 +38,16 @@ export const authMiddleware = async (
     req.userId = decoded.sub;
     req.userEmail = decoded.email;
     req.userType = decoded.user_type;
+    
+    // Store full user object for tenant middleware
+    req.user = {
+      id: decoded.sub,
+      email: decoded.email,
+      user_type: decoded.user_type,
+      tenant_id: decoded.tenant_id,
+    };
 
-    logger.debug('Auth middleware passed', { userId: req.userId, userType: req.userType });
+    logger.debug('Auth middleware passed', { userId: req.userId, userType: req.userType, tenantId: decoded.tenant_id });
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
