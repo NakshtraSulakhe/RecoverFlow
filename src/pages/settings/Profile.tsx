@@ -19,7 +19,9 @@ import { cn } from '../../utils/cn';
 import { toast } from 'react-toastify';
 
 export const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const user = useAppSelector(
+    state => state.auth.user
+);
   const { mode } = useTheme();
   const isDark = mode === 'dark';
 

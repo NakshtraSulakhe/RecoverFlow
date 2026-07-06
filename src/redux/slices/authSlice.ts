@@ -4,6 +4,46 @@ import { authService } from '../../features/auth/authService'
 import { AUTH_CONFIG } from '../../features/auth/constants'
 import { STORAGE_KEYS } from '../../utils/constants'
 
+const defaultPermissions: Record<string, string[]> = {
+  platform_owner: ['*'],
+  tenant_admin: ['users.manage', 'customers.manage', 'loans.manage', 'recovery.manage', 'reports.view'],
+  recovery_manager: ['customers.view', 'loans.view', 'recovery.manage', 'reports.view'],
+  team_leader: ['customers.view', 'loans.view', 'recovery.manage'],
+  recovery_agent: ['customers.view', 'loans.view'],
+  legal_officer: ['legal.view', 'recovery.manage'],
+  qa: ['reports.view'],
+  auditor: ['*'],
+  read_only: ['customers.view', 'reports.view'],
+  viewer: ['customers.view'],
+};
+
+function mapUserFromResponse(data: any, userData: any): User {
+  const tenant = data.tenant || userData.tenant;
+  return {
+    id: userData.id,
+    email: userData.email,
+    name: `${userData.first_name || userData.firstName || ''} ${userData.last_name || userData.lastName || ''}`.trim() || userData.email,
+    firstName: userData.first_name || userData.firstName || '',
+    lastName: userData.last_name || userData.lastName || '',
+    role: (userData.user_type ?? userData.role ?? 'read_only') as UserRole,
+    permissions: userData.permissions ?? defaultPermissions[userData.user_type ?? userData.role] ?? [],
+    tenantId: tenant?.id || userData.tenant_id || undefined,
+    tenantName: tenant?.tenant_name || tenant?.name || undefined,
+    subscriptionTier: tenant?.subscription_tier || 'starter',
+    enabledModules: tenant?.enabled_modules || userData.enabled_modules || ['dashboard', 'users', 'settings'],
+    subscription: tenant?.subscription || null,
+    mustChangePassword: userData.must_change_password ?? false,
+    language: userData.language || 'en',
+    theme: (userData.theme ?? 'light') as 'light' | 'dark' | 'system',
+    timezone: userData.timezone || 'UTC',
+    isActive: userData.status === 'active' || userData.is_active !== false,
+    isLocked: userData.is_locked || false,
+    lastLoginAt: userData.last_login_at || userData.lastLoginAt || undefined,
+    createdAt: userData.created_at || userData.createdAt || new Date().toISOString(),
+    updatedAt: userData.updated_at || userData.updatedAt || new Date().toISOString(),
+  };
+}
+
 interface AuthState {
   isAuthenticated: boolean
   user: User | null
@@ -46,25 +86,7 @@ export const login = createAsyncThunk(
       const userData = data.user || data
       
       return {
-        user: {
-          id: userData.id,
-          email: userData.email,
-          name: `${userData.first_name || userData.firstName || ''} ${userData.last_name || userData.lastName || ''}`.trim() || userData.email,
-          firstName: userData.first_name || userData.firstName || '',
-          lastName: userData.last_name || userData.lastName || '',
-          role: (userData.user_type || userData.role || 'agent') as UserRole,
-          permissions: userData.permissions || ['read', 'write'],
-          tenantId: data.tenant?.id || userData.tenant_id || null,
-          tenantName: data.tenant?.tenant_name || data.tenant?.name || null,
-          language: userData.language || 'en',
-          theme: (userData.theme || 'light') as const,
-          timezone: userData.timezone || 'UTC',
-          isActive: userData.status === 'active' || userData.is_active || true,
-          isLocked: userData.is_locked || false,
-          lastLoginAt: userData.last_login_at || userData.lastLoginAt || null,
-          createdAt: userData.created_at || userData.createdAt || new Date().toISOString(),
-          updatedAt: userData.updated_at || userData.updatedAt || new Date().toISOString(),
-        },
+        user: mapUserFromResponse(data, userData),
         accessToken: data.access_token || data.accessToken,
         refreshToken: data.refresh_token || data.refreshToken,
         expiresIn: data.expires_in || data.expiresIn || 3600,
@@ -120,6 +142,25 @@ export const getCurrentUser = createAsyncThunk('auth/getCurrentUser', async (_, 
   }
 )
 
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (
+    credentials: { currentPassword: string; newPassword: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      await authService.changePassword({
+        currentPassword: credentials.currentPassword,
+        newPassword: credentials.newPassword,
+        confirmPassword: credentials.newPassword,
+      })
+      return true
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to change password')
+    }
+  }
+)
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -170,15 +211,22 @@ const authSlice = createSlice({
       
       if (token && userStr) {
         try {
-          state.user = JSON.parse(userStr)
+          const user = JSON.parse(userStr)
+          state.user = user
           state.accessToken = token
           state.refreshToken = refreshToken
           state.isAuthenticated = true
+          
+          // Also make sure tenant ID is in localStorage if available
+          if (user.tenantId) {
+            localStorage.setItem(STORAGE_KEYS.TENANT_ID, user.tenantId)
+          }
         } catch (e) {
           // Invalid JSON, clear storage
           localStorage.removeItem(STORAGE_KEYS.TOKEN)
           localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
           localStorage.removeItem(STORAGE_KEYS.USER)
+          localStorage.removeItem(STORAGE_KEYS.TENANT_ID)
           localStorage.removeItem('remember_me')
           sessionStorage.removeItem(STORAGE_KEYS.TOKEN)
           sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
@@ -211,6 +259,9 @@ const authSlice = createSlice({
         storage.setItem(STORAGE_KEYS.TOKEN, action.payload.accessToken)
         storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, action.payload.refreshToken)
         storage.setItem(STORAGE_KEYS.USER, JSON.stringify(action.payload.user))
+        if (action.payload.user.tenantId) {
+          localStorage.setItem(STORAGE_KEYS.TENANT_ID, action.payload.user.tenantId)
+        }
         if (action.meta.arg?.rememberMe) {
           localStorage.setItem('remember_me', 'true')
         }
@@ -238,6 +289,7 @@ const authSlice = createSlice({
         localStorage.removeItem(STORAGE_KEYS.TOKEN)
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
         localStorage.removeItem(STORAGE_KEYS.USER)
+        localStorage.removeItem(STORAGE_KEYS.TENANT_ID)
         localStorage.removeItem('remember_me')
         sessionStorage.removeItem(STORAGE_KEYS.TOKEN)
         sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
@@ -256,6 +308,7 @@ const authSlice = createSlice({
         localStorage.removeItem(STORAGE_KEYS.TOKEN)
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
         localStorage.removeItem(STORAGE_KEYS.USER)
+        localStorage.removeItem(STORAGE_KEYS.TENANT_ID)
         localStorage.removeItem('remember_me')
         sessionStorage.removeItem(STORAGE_KEYS.TOKEN)
         sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
@@ -294,6 +347,7 @@ const authSlice = createSlice({
         localStorage.removeItem(STORAGE_KEYS.TOKEN)
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
         localStorage.removeItem(STORAGE_KEYS.USER)
+        localStorage.removeItem(STORAGE_KEYS.TENANT_ID)
         localStorage.removeItem('remember_me')
         sessionStorage.removeItem(STORAGE_KEYS.TOKEN)
         sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
@@ -305,19 +359,50 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.isLoading = false
-        const data = (action.payload as any).data || action.payload
-        state.user = data as User
+        const payload = (action.payload as any).data || action.payload
+        const userData = payload.user || payload
+        const tenant = payload.tenant || userData.tenant
+        state.user = {
+          ...(state.user || {}),
+          id: userData.id,
+          email: userData.email,
+          name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim() || userData.email,
+          firstName: userData.first_name,
+          lastName: userData.last_name,
+          role: userData.user_type || state.user?.role || 'read_only',
+          permissions: userData.permissions || state.user?.permissions || [],
+          tenantId: tenant?.id || userData.tenant_id,
+          tenantName: tenant?.tenant_name,
+          subscriptionTier: tenant?.subscription_tier || state.user?.subscriptionTier,
+          enabledModules: tenant?.enabled_modules || state.user?.enabledModules,
+          subscription: tenant?.subscription || state.user?.subscription,
+          mustChangePassword: userData.must_change_password ?? false,
+          isActive: userData.is_active !== false,
+          language: state.user?.language || 'en',
+          theme: state.user?.theme || 'light',
+          timezone: state.user?.timezone || 'UTC',
+          isLocked: false,
+          createdAt: state.user?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as User
         state.isAuthenticated = true
         
-        // Update persisted user
         const rememberMe = localStorage.getItem('remember_me') === 'true'
         const storage = rememberMe ? localStorage : sessionStorage
-        storage.setItem(STORAGE_KEYS.USER, JSON.stringify(data))
+        storage.setItem(STORAGE_KEYS.USER, JSON.stringify(state.user))
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.isLoading = false
         state.error = (action.payload as string) || 'Failed to fetch user'
         state.errorCode = AuthErrorCode.UNAUTHORIZED
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        if (state.user) {
+          state.user.mustChangePassword = false
+          const rememberMe = localStorage.getItem('remember_me') === 'true'
+          const storage = rememberMe ? localStorage : sessionStorage
+          storage.setItem(STORAGE_KEYS.USER, JSON.stringify(state.user))
+        }
       })
   },
 })

@@ -76,7 +76,10 @@ class AuthService {
    * Change password
    */
   async changePassword(request: ChangePasswordRequest): Promise<void> {
-    await apiClient.post('/auth/change-password', request)
+    await apiClient.post('/auth/change-password', {
+      current_password: request.currentPassword,
+      new_password: request.newPassword,
+    })
   }
 
   /**

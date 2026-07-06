@@ -3,11 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
 import { ApiResponse, Module } from '../types';
 import { logger } from '../utils/logger';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+import { pool } from '../config/database';
 
 interface ModuleFilters {
   status?: string;

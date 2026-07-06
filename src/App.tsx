@@ -4,12 +4,20 @@ import { CircularProgress, Box } from '@mui/material'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import { AuthProvider } from './contexts/AuthContext'
+// import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { TenantProvider } from './features/tenant/context/TenantContext'
 import { ProtectedRoute } from './components/routing/ProtectedRoute'
 import { PublicRoute } from './components/routing/PublicRoute'
 import { AuthLayout, PlatformLayout, TenantLayout } from './layouts'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
+import { useEffect } from 'react';
+import { useAppDispatch } from './redux/store';
+import { initializeFromStorage } from './redux/slices/authSlice';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a client
+const queryClient = new QueryClient();
 
 // Lazy load pages
 const Login = lazy(() => import('./pages/auth/Login'))
@@ -19,6 +27,7 @@ const SessionExpired = lazy(() => import('./pages/auth/SessionExpired'))
 const Unauthorized = lazy(() => import('./pages/auth/Unauthorized'))
 const AccountLocked = lazy(() => import('./pages/auth/AccountLocked'))
 const PasswordExpired = lazy(() => import('./pages/auth/PasswordExpired'))
+const ChangePassword = lazy(() => import('./pages/auth/ChangePassword'))
 const NotFound = lazy(() => import('./pages/auth/NotFound'))
 const ServerError = lazy(() => import('./pages/auth/ServerError'))
 
@@ -31,8 +40,8 @@ const ModuleMaster = lazy(() => import('./pages/platform/ModuleMaster'))
 const PlatformUsers = lazy(() => import('./pages/users/Users'))
 const SubscriptionPlans = lazy(() => import('./pages/platform/Plans'))
 const Subscriptions = lazy(() => import('./pages/platform/Subscriptions'))
-const Roles = lazy(() => import('./pages/settings/Teams')) // Placeholder
-const Permissions = lazy(() => import('./pages/settings/Departments')) // Placeholder
+const Roles = lazy(() => import('./pages/settings/Roles'))
+const Permissions = lazy(() => import('./pages/settings/Permissions'))
 const PlatformBilling = lazy(() => import('./pages/settings/Subscription'))
 const PlatformAudit = lazy(() => import('./pages/settings/TenantAudit'))
 const PlatformHealth = lazy(() => import('./pages/settings/TenantSettings'))
@@ -40,6 +49,12 @@ const PlatformSettingsPage = lazy(() => import('./pages/settings/PlatformSetting
 
 // Tenant pages
 const TenantDashboard = lazy(() => import('./pages/dashboard/Dashboard'))
+const Organization = lazy(() => import('./pages/organization/Organization'))
+const AdminUsers = lazy(() => import('./pages/admin/Users'))
+const AdminRoles = lazy(() => import('./pages/admin/Roles'))
+const AdminPermissions = lazy(() => import('./pages/admin/Permissions'))
+const AdminDepartments = lazy(() => import('./pages/admin/Departments'))
+const AdminTeams = lazy(() => import('./pages/admin/Teams'))
 const Customers = lazy(() => import('./pages/customers/Customers'))
 const Loans = lazy(() => import('./pages/cases/Cases')) // Placeholder
 const Recovery = lazy(() => import('./pages/recovery/Recovery'))
@@ -70,89 +85,103 @@ const PageLoader = () => (
 )
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(initializeFromStorage());
+  }, [dispatch]);
   return (
     <ErrorBoundary>
       <BrowserRouter>
         <ThemeProvider>
-          <AuthProvider>
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="dark"
-            />
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* Public Routes with AuthLayout */}
-                <Route path="/" element={<AuthLayout />}>
-                  <Route index element={<Navigate to="/login" replace />} />
-                  <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />
-                  <Route path="forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-                  <Route path="reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-                  <Route path="session-expired" element={<PublicRoute><SessionExpired /></PublicRoute>} />
-                  <Route path="unauthorized" element={<PublicRoute><Unauthorized /></PublicRoute>} />
-                  <Route path="account-locked" element={<PublicRoute><AccountLocked /></PublicRoute>} />
-                  <Route path="password-expired" element={<PublicRoute><PasswordExpired /></PublicRoute>} />
-                </Route>
+          <TenantProvider>
+            {/* <AuthProvider> */}
+              <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+              />
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Public Routes with AuthLayout */}
+                  <Route path="/" element={<AuthLayout />}>
+                    <Route index element={<Navigate to="/login" replace />} />
+                    <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />
+                    <Route path="forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+                    <Route path="reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+                    <Route path="change-password" element={<ProtectedRoute allowPasswordChange={true}><ChangePassword /></ProtectedRoute>} />
+                    <Route path="session-expired" element={<PublicRoute><SessionExpired /></PublicRoute>} />
+                    <Route path="unauthorized" element={<PublicRoute><Unauthorized /></PublicRoute>} />
+                    <Route path="account-locked" element={<PublicRoute><AccountLocked /></PublicRoute>} />
+                    <Route path="password-expired" element={<PublicRoute><PasswordExpired /></PublicRoute>} />
+                  </Route>
 
-                {/* Platform Routes with PlatformLayout */}
-                <Route path="/platform" element={
-                  <ProtectedRoute>
-                    <PlatformLayout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<Navigate to="/platform/dashboard" replace />} />
-                  <Route path="dashboard" element={<PlatformDashboard />} />
-                  <Route path="tenants" element={<TenantList />} />
-                  <Route path="tenants/new" element={<TenantForm />} />
-                  <Route path="tenants/:id" element={<TenantDetail />} />
-                  <Route path="tenants/:id/edit" element={<TenantForm />} />
-                  <Route path="plans" element={<SubscriptionPlans />} />
-                <Route path="subscriptions" element={<Subscriptions />} />
-                <Route path="modules" element={<ModuleMaster />} />
-                <Route path="users" element={<PlatformUsers />} />
-                  <Route path="roles" element={<Roles />} />
-                  <Route path="permissions" element={<Permissions />} />
-                  <Route path="billing" element={<PlatformBilling />} />
-                  <Route path="audit-logs" element={<PlatformAudit />} />
-                  <Route path="system-health" element={<PlatformHealth />} />
-                  <Route path="settings" element={<PlatformSettingsPage />} />
-                </Route>
+                  {/* Platform Routes with PlatformLayout */}
+                  <Route path="/platform" element={
+                    <ProtectedRoute>
+                      <PlatformLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Navigate to="/platform/dashboard" replace />} />
+                    <Route path="dashboard" element={<PlatformDashboard />} />
+                    <Route path="tenants" element={<TenantList />} />
+                    <Route path="tenants/new" element={<TenantForm />} />
+                    <Route path="tenants/:id" element={<TenantDetail />} />
+                    <Route path="tenants/:id/edit" element={<TenantForm />} />
+                    <Route path="plans" element={<SubscriptionPlans />} />
+                  <Route path="subscriptions" element={<Subscriptions />} />
+                  <Route path="modules" element={<ModuleMaster />} />
+                  <Route path="users" element={<PlatformUsers />} />
+                    <Route path="roles" element={<Roles />} />
+                    <Route path="permissions" element={<Permissions />} />
+                    <Route path="billing" element={<PlatformBilling />} />
+                    <Route path="audit-logs" element={<PlatformAudit />} />
+                    <Route path="system-health" element={<PlatformHealth />} />
+                    <Route path="settings" element={<PlatformSettingsPage />} />
+                  </Route>
 
-                {/* Tenant Routes with TenantLayout */}
-                <Route path="/app" element={
-                  <ProtectedRoute>
-                    <TenantLayout />
-                  </ProtectedRoute>
-                }>
-                  <Route index element={<Navigate to="/app/dashboard" replace />} />
-                  <Route path="dashboard" element={<TenantDashboard />} />
-                  <Route path="customers" element={<Customers />} />
-                  <Route path="loans" element={<Loans />} />
-                  <Route path="recovery" element={<Recovery />} />
-                  <Route path="communication" element={<Communication />} />
-                  <Route path="payments" element={<Payments />} />
-                  <Route path="reports" element={<Reports />} />
-                  <Route path="ai" element={<AI />} />
-                  <Route path="workflow" element={<Workflow />} />
-                  <Route path="settings" element={<TenantSettingsPage />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="priority-scoring" element={<PriorityScoring />} />
-                  <Route path="ptp-tracker" element={<PTPTracker />} />
-                </Route>
+                  {/* Tenant Routes with TenantLayout */}
+                  <Route path="/app" element={
+                    <ProtectedRoute>
+                      <TenantLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Navigate to="/app/dashboard" replace />} />
+                    <Route path="dashboard" element={<TenantDashboard />} />
+                    <Route path="organization" element={<Organization />} />
+                    <Route path="admin/users" element={<AdminUsers />} />
+                    <Route path="admin/roles" element={<AdminRoles />} />
+                    <Route path="admin/permissions" element={<AdminPermissions />} />
+                    <Route path="admin/departments" element={<AdminDepartments />} />
+                    <Route path="admin/teams" element={<AdminTeams />} />
+                    <Route path="customers" element={<Customers />} />
+                    <Route path="loans" element={<Loans />} />
+                    <Route path="recovery" element={<Recovery />} />
+                    <Route path="communication" element={<Communication />} />
+                    <Route path="payments" element={<Payments />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="ai" element={<AI />} />
+                    <Route path="workflow" element={<Workflow />} />
+                    <Route path="settings" element={<TenantSettingsPage />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="priority-scoring" element={<PriorityScoring />} />
+                    <Route path="ptp-tracker" element={<PTPTracker />} />
+                  </Route>
 
-                {/* Fallback routes */}
-                <Route path="*" element={<NotFound />} />
-                <Route path="/server-error" element={<ServerError />} />
-              </Routes>
-            </Suspense>
-          </AuthProvider>
+                  {/* Fallback routes */}
+                  <Route path="*" element={<NotFound />} />
+                  <Route path="/server-error" element={<ServerError />} />
+                </Routes>
+              </Suspense>
+            {/* </AuthProvider> */}
+          </TenantProvider>
         </ThemeProvider>
       </BrowserRouter>
     </ErrorBoundary>

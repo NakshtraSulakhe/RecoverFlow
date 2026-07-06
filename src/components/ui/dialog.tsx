@@ -5,12 +5,18 @@ import { cn } from "../../utils/cn"
 
 interface DialogProps {
   open: boolean
-  onClose: () => void
+  onClose?: () => void
+  onOpenChange?: (open: boolean) => void
   children: React.ReactNode
   className?: string
 }
 
-export const Dialog: React.FC<DialogProps> = ({ open, onClose, children, className }) => {
+export const Dialog: React.FC<DialogProps> = ({ open, onClose, onOpenChange, children, className }) => {
+  const handleClose = () => {
+    onClose?.()
+    onOpenChange?.(false)
+  }
+
   React.useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden"
@@ -32,7 +38,7 @@ export const Dialog: React.FC<DialogProps> = ({ open, onClose, children, classNa
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={onClose}
+            onClick={handleClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
           />
 
@@ -49,7 +55,7 @@ export const Dialog: React.FC<DialogProps> = ({ open, onClose, children, classNa
           >
             {/* Close Button */}
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="absolute right-4 top-4 rounded-md opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
               <X className="h-4 w-4" />
@@ -74,6 +80,10 @@ export const DialogTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = (
 
 export const DialogDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({ className, ...props }) => (
   <p className={cn("text-sm text-muted-foreground mt-1", className)} {...props} />
+)
+
+export const DialogContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
+  <div className={cn("", className)} {...props} />
 )
 
 export const DialogFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (

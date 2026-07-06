@@ -1,3 +1,55 @@
+export interface Department {
+  id: string;
+  tenant_id: string;
+  name: string;
+  code: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+}
+
+export interface Team {
+  id: string;
+  tenant_id: string;
+  department_id?: string;
+  name: string;
+  code: string;
+  description?: string;
+  manager_id?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+}
+
+export interface Permission {
+  id: string;
+  module_code: string;
+  permission_code: string;
+  name: string;
+  description?: string;
+  permission_type: 'module' | 'page' | 'action' | 'feature';
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Role {
+  id: string;
+  tenant_id?: string;
+  name: string;
+  code: string;
+  description?: string;
+  is_system_role: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+  permissions?: Permission[];
+}
+
 export interface User {
   id: string;
   tenant_id: string;
@@ -9,17 +61,21 @@ export interface User {
   profile_picture_url?: string;
   phone?: string;
   user_type: 'platform_owner' | 'tenant_admin' | 'recovery_manager' | 'team_leader' | 'recovery_agent' | 'legal_officer' | 'qa' | 'auditor' | 'read_only';
+  department_id?: string;
+  team_id?: string;
   status: 'active' | 'inactive' | 'suspended';
   created_at: string;
   updated_at: string;
+  roles?: Role[];
+  permissions?: string[];
 }
 
 export interface Tenant {
   id: string;
   tenant_code: string;
   tenant_name: string;
-  legal_name: string;
-  business_type: 'bank' | 'nbfc' | 'collection_agency' | 'fintech' | 'lending_company' | 'microfinance';
+  legal_name?: string;
+  business_type?: 'bank' | 'nbfc' | 'collection_agency' | 'fintech' | 'lending_company' | 'microfinance';
   contact_email: string;
   contact_phone?: string;
   contact_person?: string;
@@ -38,9 +94,10 @@ export interface Tenant {
   logo_url?: string;
   brand_color?: string;
   is_active: boolean;
-  status: 'active' | 'suspended' | 'terminated';
-  subscription_tier: string;
-  subscription_plan: string;
+  status?: 'active' | 'suspended' | 'terminated';
+  subscription_tier?: string;
+  subscription_status?: 'active' | 'suspended' | 'cancelled' | 'expired';
+  subscription_plan?: string;
   features: Record<string, boolean>;
   settings: Record<string, any>;
   created_at: string;

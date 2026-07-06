@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { requirePlatformOwner } from '../middleware/roleMiddleware';
-import { tenantMiddleware } from '../middleware/tenantMiddleware';
 import { tenantController } from '../controllers/tenant.controller';
 
 const router = Router();
@@ -79,7 +78,7 @@ router.get('/', authMiddleware, requirePlatformOwner, tenantController.getAllTen
  *       404:
  *         description: Tenant not found
  */
-router.get('/:id', authMiddleware, tenantMiddleware, tenantController.getTenantById);
+router.get('/:id', authMiddleware, requirePlatformOwner, tenantController.getTenantById);
 
 /**
  * @swagger
@@ -109,7 +108,7 @@ router.get('/:id', authMiddleware, tenantMiddleware, tenantController.getTenantB
  *       404:
  *         description: Tenant not found
  */
-router.put('/:id', authMiddleware, tenantMiddleware, tenantController.updateTenant);
+router.put('/:id', authMiddleware, requirePlatformOwner, tenantController.updateTenant);
 
 /**
  * @swagger
@@ -229,6 +228,6 @@ router.post('/:id/archive', authMiddleware, requirePlatformOwner, tenantControll
  *       404:
  *         description: Tenant not found
  */
-router.get('/:id/stats', authMiddleware, tenantMiddleware, tenantController.getTenantStats);
+router.get('/:id/stats', authMiddleware, requirePlatformOwner, tenantController.getTenantStats);
 
 export { router as tenantRoutes };

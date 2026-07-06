@@ -4,7 +4,9 @@ import { getDashboardConfig, getKPIsForRole, getWidgetConfig } from '../config/d
 import { DashboardConfig, KPIDefinition, WidgetConfig } from '../types/dashboard.types';
 
 export const useDashboardConfig = () => {
-  const { user } = useAuth();
+  const user = useAppSelector(
+    state => state.auth.user
+);
   const userRole = user?.user_type || 'read_only';
 
   const dashboardConfig = useMemo(() => {

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
-import { tenantService, TenantStats } from '../services/api/tenant.service';
+import { tenantService, TenantStats, CreateTenantPayload } from '../services/api/tenant.service';
 import { Tenant } from '../services/api/types';
 
 export const useTenants = (params?: any, options?: UseQueryOptions) => {
@@ -32,7 +32,7 @@ export const useCreateTenant = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Partial<Tenant>) => tenantService.createTenant(data),
+    mutationFn: (data: CreateTenantPayload) => tenantService.createTenant(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
     },

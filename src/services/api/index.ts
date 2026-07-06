@@ -1,7 +1,9 @@
 export { apiClient } from './client';
 export * from './types';
+export type { Department, Team, Permission, Role } from './types';
 export { authService } from './auth.service';
 export { tenantService } from './tenant.service';
+export type { CreateTenantPayload } from './tenant.service';
 export { userService } from './user.service';
 export { customerService } from './customer.service';
 export { loanService } from './loan.service';
@@ -9,3 +11,7 @@ export { recoveryService } from './recovery.service';
 export { aiService } from './ai.service';
 export { subscriptionService } from './subscription.service';
 export { moduleService } from './module.service';
+export { departmentService } from './department.service';
+export { teamService } from './team.service';
+export { roleService } from './role.service';
+export { permissionService } from './permission.service';

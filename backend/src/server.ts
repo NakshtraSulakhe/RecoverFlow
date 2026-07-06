@@ -23,6 +23,11 @@ import { customerRoutes } from './routes/customer.routes';
 import { loanRoutes } from './routes/loan.routes';
 import { recoveryRoutes } from './routes/recovery.routes';
 import { aiRoutes } from './routes/ai.routes';
+import { departmentRoutes } from './routes/department.routes';
+import { teamRoutes } from './routes/team.routes';
+import { roleRoutes } from './routes/role.routes';
+import { permissionRoutes } from './routes/permission.routes';
+import { userProvisioningRoutes } from './routes/userProvisioning.routes';
 
 const app: Application = express();
 
@@ -132,6 +137,11 @@ app.use(`${config.apiPrefix}/customers`, customerRoutes);
 app.use(`${config.apiPrefix}/loans`, loanRoutes);
 app.use(`${config.apiPrefix}/recovery`, recoveryRoutes);
 app.use(`${config.apiPrefix}/ai`, aiRoutes);
+app.use(`${config.apiPrefix}/departments`, departmentRoutes);
+app.use(`${config.apiPrefix}/teams`, teamRoutes);
+app.use(`${config.apiPrefix}/roles`, roleRoutes);
+app.use(`${config.apiPrefix}/permissions`, permissionRoutes);
+app.use(`${config.apiPrefix}/user-provisioning`, userProvisioningRoutes);
 
 // 404 handler
 app.use(notFoundHandler);

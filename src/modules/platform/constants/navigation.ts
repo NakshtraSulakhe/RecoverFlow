@@ -110,6 +110,17 @@ export const platformNavItems: NavItem[] = [
   },
 ]
 
+export const platformNavGroups = [
+  { id: 'overview', label: 'Overview', items: platformNavItems.slice(0, 1) },
+  { id: 'tenants', label: 'Tenant Management', items: platformNavItems.slice(1, 4) },
+  { id: 'platform', label: 'Platform', items: platformNavItems.slice(4, 8) },
+  { id: 'operations', label: 'Operations', items: platformNavItems.slice(8, 10) },
+  { id: 'settings', label: 'Settings', items: platformNavItems.slice(10) },
+].map((group) => ({
+  ...group,
+  items: group.items.map((item) => ({ ...item, label: item.text, id: item.path.replace(/\//g, '-') })),
+}));
+
 export const platformSettingsSections: NavItem[] = platformNavItems.filter(
   item => item.path !== '/platform/dashboard'
 )

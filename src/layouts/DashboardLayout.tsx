@@ -11,7 +11,9 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { user } = useAuth();
+  const user = useAppSelector(
+    state => state.auth.user
+);
   const { mode } = useTheme();
   const { dashboardConfig } = useDashboardConfig();
   const isDark = mode === 'dark';

@@ -132,10 +132,11 @@ const TenantDetail: React.FC = () => {
   }
 
   if (error) {
+    const apiMessage = (error as any)?.response?.data?.message;
     return (
       <Box className="p-6">
         <Alert severity="error">
-          {error instanceof Error ? error.message : 'Failed to load tenant'}
+          {apiMessage || (error instanceof Error ? error.message : 'Failed to load tenant')}
         </Alert>
       </Box>
     );
@@ -147,7 +148,8 @@ const TenantDetail: React.FC = () => {
     return isActive ? 'success' : 'warning';
   };
 
-  const getPlanName = (tier: string) => {
+  const getPlanName = (tier?: string) => {
+    if (!tier) return 'N/A';
     const plans: Record<string, string> = {
       starter: 'Starter',
       professional: 'Professional',
@@ -212,7 +214,7 @@ const TenantDetail: React.FC = () => {
             )}
             <Button
               variant="outlined"
-              color="default"
+              color="inherit"
               startIcon={<ArchiveIcon />}
               onClick={() => archiveMutation.mutate()}
               disabled={archiveMutation.isPending}
@@ -305,7 +307,7 @@ const TenantDetail: React.FC = () => {
                 Business Type
               </Typography>
               <Typography variant="body1">
-                {tenant.business_type.replace('_', ' ')}
+                {(tenant.business_type || 'N/A').replace('_', ' ')}
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>

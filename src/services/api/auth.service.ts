@@ -1,10 +1,11 @@
 import { apiClient } from './client';
 import { ApiResponse, AuthResponse, LoginCredentials, RegisterCredentials, User } from './types';
+import { STORAGE_KEYS } from '../../utils/constants';
 
-const TOKEN_KEY = 'access_token';
-const REFRESH_TOKEN_KEY = 'refresh_token';
-const USER_KEY = 'user';
-const TENANT_ID_KEY = 'tenant_id';
+const TOKEN_KEY = STORAGE_KEYS.TOKEN;
+const REFRESH_TOKEN_KEY = STORAGE_KEYS.REFRESH_TOKEN;
+const USER_KEY = STORAGE_KEYS.USER;
+const TENANT_ID_KEY = STORAGE_KEYS.TENANT_ID;
 const REMEMBER_ME_KEY = 'remember_me';
 const TOKEN_EXPIRY_KEY = 'token_expiry';
 
@@ -115,7 +116,7 @@ export const authService = {
     const storage = this.getStorageForToken();
     const refreshToken = storage?.getItem(REFRESH_TOKEN_KEY);
     
-    if (!refreshToken) {
+    if (!refreshToken || !storage) {
       throw new Error('No refresh token available');
     }
 

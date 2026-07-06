@@ -4,7 +4,9 @@ import { getWidgetsByType, getWidgetsForRole } from '../config/dashboards/dashbo
 import { WidgetConfig, WidgetType } from '../types/dashboard.types';
 
 export const useWidgetRegistry = () => {
-  const { user } = useAuth();
+  const user = useAppSelector(
+    state => state.auth.user
+);
   const userRole = user?.user_type || 'read_only';
 
   const widgetsByType = useMemo(() => {

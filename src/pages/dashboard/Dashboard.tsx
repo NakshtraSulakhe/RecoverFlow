@@ -1,3 +1,6 @@
+import React from 'react';
+import { useAppSelector } from '../../redux/store';
+import TenantAdminDashboard from './TenantAdminDashboard';
 import { Box, Grid, Typography, Card, CardContent, IconButton, Button, Avatar, Chip } from '@mui/material'
 import { 
   TrendingUp, 
@@ -74,13 +77,21 @@ const KPICard = ({ title, value, icon, trend, color }: any) => (
 )
 
 export default function Dashboard() {
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Show Tenant Admin Dashboard for tenant_admin role
+  if (user?.role === 'tenant_admin') {
+    return <TenantAdminDashboard />;
+  }
+
+  // Show standard dashboard for other roles
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Box>
           <Typography variant="h2" gutterBottom>Overview</Typography>
           <Typography variant="body2" color="text.secondary">
-            Welcome back, Admin. Here's what's happening with your recovery operations today.
+            Welcome back, {user?.firstName || user?.name?.split(' ')[0] || 'Admin'}. Here's what's happening with your recovery operations today.
           </Typography>
         </Box>
         <Box display="flex" gap={2}>

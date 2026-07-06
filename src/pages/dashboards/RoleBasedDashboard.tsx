@@ -23,7 +23,9 @@ const DASHBOARD_COMPONENTS: Record<string, React.FC> = {
 };
 
 export const RoleBasedDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const user = useAppSelector(
+    state => state.auth.user
+);
   const userRole = user?.user_type || 'read_only';
   
   const DashboardComponent = DASHBOARD_COMPONENTS[userRole] || ReadOnlyDashboard;

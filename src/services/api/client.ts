@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosRequestConfig } from 'axios';
+import { STORAGE_KEYS } from '../../utils/constants';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
 
@@ -17,12 +18,18 @@ class ApiClient {
     this.setupInterceptors();
   }
 
+  private getStorage() {
+    const rememberMe = localStorage.getItem('remember_me') === 'true';
+    return rememberMe ? localStorage : sessionStorage;
+  }
+
   private setupInterceptors() {
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('access_token');
-        const tenantId = localStorage.getItem('tenant_id');
+        const storage = this.getStorage();
+        const token = storage.getItem(STORAGE_KEYS.TOKEN);
+        const tenantId = localStorage.getItem(STORAGE_KEYS.TENANT_ID);
 
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -49,12 +56,13 @@ class ApiClient {
           originalRequest._retry = true;
 
           try {
-            const refreshToken = localStorage.getItem('refresh_token');
+            const storage = this.getStorage();
+            const refreshToken = storage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
             if (refreshToken) {
               const response = await this.client.post('/auth/refresh', { refresh_token: refreshToken });
               const { access_token } = response.data.data;
 
-              localStorage.setItem('access_token', access_token);
+              storage.setItem(STORAGE_KEYS.TOKEN, access_token);
 
               if (originalRequest.headers) {
                 originalRequest.headers.Authorization = `Bearer ${access_token}`;
@@ -64,9 +72,12 @@ class ApiClient {
             }
           } catch (refreshError) {
             // Refresh failed, logout user
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('tenant_id');
+            const storage = this.getStorage();
+            storage.removeItem(STORAGE_KEYS.TOKEN);
+            storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+            storage.removeItem(STORAGE_KEYS.USER);
+            localStorage.removeItem(STORAGE_KEYS.TENANT_ID);
+            localStorage.removeItem('remember_me');
             window.location.href = '/login';
             return Promise.reject(refreshError);
           }

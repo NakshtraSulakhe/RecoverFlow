@@ -27,7 +27,7 @@ export interface TenantModuleWithInherited extends Module {
 
 export const moduleService = {
   async getAllModules(params?: PaginationParams & FilterParams) {
-    const response = await apiClient.get<ApiResponse<Module[]>>('/v1/modules', { params });
+    const response = await apiClient.get<ApiResponse<Module[]>>('/modules', { params });
     return response.data;
   },
 
@@ -37,7 +37,7 @@ export const moduleService = {
   },
 
   async createModule(data: Partial<Module>) {
-    const response = await apiClient.post<ApiResponse<Module>>('/v1/modules', data);
+    const response = await apiClient.post<ApiResponse<Module>>('/modules', data);
     return response.data;
   },
 

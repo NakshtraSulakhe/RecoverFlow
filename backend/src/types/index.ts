@@ -1,3 +1,63 @@
+export interface Department {
+  id: string;
+  tenant_id: string;
+  name: string;
+  code: string;
+  description?: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at?: Date;
+}
+
+export interface Team {
+  id: string;
+  tenant_id: string;
+  department_id?: string;
+  name: string;
+  code: string;
+  description?: string;
+  manager_id?: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at?: Date;
+}
+
+export interface Permission {
+  id: string;
+  module_code: string;
+  permission_code: string;
+  name: string;
+  description?: string;
+  permission_type: 'module' | 'page' | 'action' | 'feature';
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Role {
+  id: string;
+  tenant_id?: string;
+  name: string;
+  code: string;
+  description?: string;
+  is_system_role: boolean;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at?: Date;
+  permissions?: Permission[];
+}
+
+export interface UserRole {
+  id: string;
+  user_id: string;
+  role_id: string;
+  assigned_at: Date;
+  assigned_by?: string;
+}
+
 export interface User {
   id: string;
   tenant_id: string;
@@ -9,23 +69,44 @@ export interface User {
   profile_picture_url?: string;
   phone?: string;
   user_type: 'platform_owner' | 'tenant_admin' | 'recovery_manager' | 'team_leader' | 'recovery_agent' | 'legal_officer' | 'qa' | 'auditor' | 'read_only';
+  department_id?: string;
+  team_id?: string;
   status: 'active' | 'inactive' | 'suspended';
   created_at: Date;
   updated_at: Date;
+  roles?: Role[];
+  permissions?: string[];
 }
 
 export interface Tenant {
   id: string;
   tenant_code: string;
   tenant_name: string;
-  legal_name: string;
-  business_type: 'bank' | 'nbfc' | 'collection_agency' | 'fintech' | 'lending_company' | 'microfinance';
+  legal_name?: string;
+  business_type?: 'bank' | 'nbfc' | 'collection_agency' | 'fintech' | 'lending_company' | 'microfinance';
   contact_email: string;
   contact_phone?: string;
-  status: 'active' | 'suspended' | 'terminated';
-  subscription_plan: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
+  subdomain?: string;
+  industry?: string;
+  timezone?: string;
+  currency?: string;
+  gst_number?: string;
+  pan_number?: string;
+  logo_url?: string;
+  brand_color?: string;
+  subscription_tier?: string;
+  subscription_status?: 'active' | 'suspended' | 'cancelled' | 'expired';
+  subscription_expires_at?: Date;
   features: Record<string, boolean>;
+  branding?: Record<string, any>;
   settings: Record<string, any>;
+  security_settings?: Record<string, any>;
+  is_active: boolean;
   created_at: Date;
   updated_at: Date;
 }

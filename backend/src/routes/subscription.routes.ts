@@ -7,7 +7,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/v1/subscriptions:
+ * /api/subscriptions:
  *   get:
  *     summary: Get all subscriptions
  *     tags: [Subscriptions]
@@ -23,7 +23,7 @@ router.get('/', authMiddleware, requirePlatformOwner, subscriptionController.get
 
 /**
  * @swagger
- * /api/v1/subscriptions/{id}:
+ * /api/subscriptions/{id}:
  *   get:
  *     summary: Get subscription by ID
  *     tags: [Subscriptions]
@@ -47,7 +47,7 @@ router.get('/:id', authMiddleware, subscriptionController.getSubscriptionById);
 
 /**
  * @swagger
- * /api/v1/subscriptions:
+ * /api/subscriptions:
  *   post:
  *     summary: Create a new subscription
  *     tags: [Subscriptions]
@@ -84,7 +84,7 @@ router.post('/', authMiddleware, requirePlatformOwner, subscriptionController.cr
 
 /**
  * @swagger
- * /api/v1/subscriptions/{id}:
+ * /api/subscriptions/{id}:
  *   put:
  *     summary: Update subscription
  *     tags: [Subscriptions]
@@ -114,7 +114,7 @@ router.put('/:id', authMiddleware, requirePlatformOwner, subscriptionController.
 
 /**
  * @swagger
- * /api/v1/subscriptions/{id}/upgrade:
+ * /api/subscriptions/{id}/upgrade:
  *   post:
  *     summary: Upgrade subscription
  *     tags: [Subscriptions]
@@ -144,7 +144,7 @@ router.post('/:id/upgrade', authMiddleware, requirePlatformOwner, subscriptionCo
 
 /**
  * @swagger
- * /api/v1/subscriptions/{id}/suspend:
+ * /api/subscriptions/{id}/suspend:
  *   post:
  *     summary: Suspend subscription
  *     tags: [Subscriptions]
@@ -168,7 +168,7 @@ router.post('/:id/suspend', authMiddleware, requirePlatformOwner, subscriptionCo
 
 /**
  * @swagger
- * /api/v1/subscriptions/{id}/activate:
+ * /api/subscriptions/{id}/activate:
  *   post:
  *     summary: Activate subscription
  *     tags: [Subscriptions]
@@ -192,7 +192,7 @@ router.post('/:id/activate', authMiddleware, requirePlatformOwner, subscriptionC
 
 /**
  * @swagger
- * /api/v1/subscriptions/{id}/cancel:
+ * /api/subscriptions/{id}/cancel:
  *   post:
  *     summary: Cancel subscription
  *     tags: [Subscriptions]
@@ -216,7 +216,7 @@ router.post('/:id/cancel', authMiddleware, requirePlatformOwner, subscriptionCon
 
 /**
  * @swagger
- * /api/v1/subscriptions/{id}/renew:
+ * /api/subscriptions/{id}/renew:
  *   post:
  *     summary: Renew subscription
  *     tags: [Subscriptions]

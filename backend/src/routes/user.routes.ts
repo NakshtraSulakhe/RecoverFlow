@@ -82,9 +82,9 @@ router.put('/:id', authMiddleware, tenantMiddleware, userController.updateUser);
 
 /**
  * @swagger
- * /api/v1/users/{id}:
- *   delete:
- *     summary: Delete user
+ * /api/v1/users/{id}/status:
+ *   patch:
+ *     summary: Toggle user status (active/inactive/suspended)
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -96,8 +96,48 @@ router.put('/:id', authMiddleware, tenantMiddleware, userController.updateUser);
  *           type: string
  *     responses:
  *       200:
- *         description: User deleted successfully
+ *         description: User status updated successfully
  */
-router.delete('/:id', authMiddleware, tenantMiddleware, requireTenantAdmin, userController.deleteUser);
+router.patch('/:id/status', authMiddleware, tenantMiddleware, requireTenantAdmin, userController.toggleUserStatus);
+
+/**
+ * @swagger
+ * /api/v1/users/{id}/reset-password:
+ *   post:
+ *     summary: Reset user password
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ */
+router.post('/:id/reset-password', authMiddleware, tenantMiddleware, requireTenantAdmin, userController.resetUserPassword);
+
+/**
+ * @swagger
+ * /api/v1/users/{id}/roles:
+ *   put:
+ *     summary: Assign roles to user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Roles assigned successfully
+ */
+router.put('/:id/roles', authMiddleware, tenantMiddleware, requireTenantAdmin, userController.assignRolesToUser);
 
 export { router as userRoutes };

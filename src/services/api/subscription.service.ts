@@ -21,47 +21,47 @@ export interface Subscription {
 
 export const subscriptionService = {
   async getAllSubscriptions(params?: PaginationParams & FilterParams) {
-    const response = await apiClient.get<ApiResponse<Subscription[]>>('/v1/subscriptions', { params } as any);
+    const response = await apiClient.get<ApiResponse<Subscription[]>>('/subscriptions', { params } as any);
     return response.data;
   },
 
   async getSubscriptionById(id: string) {
-    const response = await apiClient.get<ApiResponse<Subscription>>(`/v1/subscriptions/${id}`);
+    const response = await apiClient.get<ApiResponse<Subscription>>(`/subscriptions/${id}`);
     return response.data;
   },
 
   async createSubscription(data: Partial<Subscription>) {
-    const response = await apiClient.post<ApiResponse<Subscription>>('/v1/subscriptions', data);
+    const response = await apiClient.post<ApiResponse<Subscription>>('/subscriptions', data);
     return response.data;
   },
 
   async updateSubscription(id: string, data: Partial<Subscription>) {
-    const response = await apiClient.put<ApiResponse<Subscription>>(`/v1/subscriptions/${id}`, data);
+    const response = await apiClient.put<ApiResponse<Subscription>>(`/subscriptions/${id}`, data);
     return response.data;
   },
 
   async upgradeSubscription(id: string, data: { plan_code: string; plan_name: string; amount: number }) {
-    const response = await apiClient.post<ApiResponse<Subscription>>(`/v1/subscriptions/${id}/upgrade`, data);
+    const response = await apiClient.post<ApiResponse<Subscription>>(`/subscriptions/${id}/upgrade`, data);
     return response.data;
   },
 
   async suspendSubscription(id: string) {
-    const response = await apiClient.post<ApiResponse<Subscription>>(`/v1/subscriptions/${id}/suspend`);
+    const response = await apiClient.post<ApiResponse<Subscription>>(`/subscriptions/${id}/suspend`);
     return response.data;
   },
 
   async activateSubscription(id: string) {
-    const response = await apiClient.post<ApiResponse<Subscription>>(`/v1/subscriptions/${id}/activate`);
+    const response = await apiClient.post<ApiResponse<Subscription>>(`/subscriptions/${id}/activate`);
     return response.data;
   },
 
   async cancelSubscription(id: string) {
-    const response = await apiClient.post<ApiResponse<Subscription>>(`/v1/subscriptions/${id}/cancel`);
+    const response = await apiClient.post<ApiResponse<Subscription>>(`/subscriptions/${id}/cancel`);
     return response.data;
   },
 
   async renewSubscription(id: string) {
-    const response = await apiClient.post<ApiResponse<Subscription>>(`/v1/subscriptions/${id}/renew`);
+    const response = await apiClient.post<ApiResponse<Subscription>>(`/subscriptions/${id}/renew`);
     return response.data;
   },
 };

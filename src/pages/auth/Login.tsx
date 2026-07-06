@@ -4,11 +4,13 @@ import { motion } from 'framer-motion'
 import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../../redux/store'
 import { login, clearError } from '../../redux/slices/authSlice'
-import { AuthErrorCode } from '../../features/auth/types'
+import { AuthErrorCode, UserRole } from '../../features/auth/types';
+import { getRoleDashboardPath } from '../../utils/roles';
 import { Input } from '../../components/ui/input'
 import { Button } from '../../components/ui/button'
 import { cn } from '../../utils/cn'
 import { toast } from 'react-toastify'
+
 
 export const Login: React.FC = () => {
   const navigate = useNavigate()
@@ -22,13 +24,13 @@ export const Login: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      const from = (location.state as any)?.from?.pathname || '/dashboard'
-      navigate(from, { replace: true })
-    }
-  }, [isAuthenticated, navigate, location])
+  // // Redirect if already authenticated
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     const from = (location.state as any)?.from?.pathname || '/dashboard'
+  //     navigate(from, { replace: true })
+  //   }
+  // }, [isAuthenticated, navigate, location])
 
   // Clear errors on unmount or when component mounts
   useEffect(() => {
@@ -85,10 +87,20 @@ export const Login: React.FC = () => {
     }
 
     try {
-      await dispatch(login({ email, password, rememberMe })).unwrap()
+      const result = await dispatch(login({ email, password, rememberMe })).unwrap()
       toast.success('Login successful')
-      const from = (location.state as any)?.from?.pathname || '/dashboard'
-      navigate(from, { replace: true })
+      
+      if (result.user?.mustChangePassword) {
+        navigate('/change-password', { replace: true })
+        return
+      }
+
+      const redirectPath = getRoleDashboardPath(result.user?.role)
+      const from = (location.state as any)?.from?.pathname
+      const isCrossLayoutRedirect =
+        (result.user?.role === UserRole.PLATFORM_OWNER && from?.startsWith('/app')) ||
+        (result.user?.role !== UserRole.PLATFORM_OWNER && from?.startsWith('/platform'))
+      navigate(isCrossLayoutRedirect ? redirectPath : from || redirectPath, { replace: true })
     } catch (err: any) {
       // Error is already handled in Redux
     }

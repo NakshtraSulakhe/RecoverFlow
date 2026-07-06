@@ -76,8 +76,8 @@ const TenantList: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string, isActive: boolean) => {
-    if (!isActive) {
+  const getStatusColor = (status?: string, isActive?: boolean) => {
+    if (isActive === false) {
       return 'warning';
     }
     switch (status) {
@@ -92,7 +92,8 @@ const TenantList: React.FC = () => {
     }
   };
 
-  const getPlanName = (tier: string) => {
+  const getPlanName = (tier?: string) => {
+    if (!tier) return 'N/A';
     const plans: Record<string, string> = {
       starter: 'Starter',
       professional: 'Professional',
@@ -178,7 +179,7 @@ const TenantList: React.FC = () => {
                       <TableCell className="font-medium">{tenant.tenant_name}</TableCell>
                       <TableCell>{tenant.tenant_code}</TableCell>
                       <TableCell>
-                        {tenant.business_type.replace('_', ' ')}
+                        {(tenant.business_type || 'N/A').replace('_', ' ')}
                       </TableCell>
                       <TableCell>
                         <Chip

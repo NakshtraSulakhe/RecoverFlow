@@ -211,4 +211,38 @@ export const API_ENDPOINTS = {
     RECOVERY_OVERVIEW: '/dashboard/recovery-overview',
     PAYMENT_TRENDS: '/dashboard/payment-trends',
   },
+
+  // Departments
+  DEPARTMENTS: {
+    LIST: '/departments',
+    CREATE: '/departments',
+    GET: (id: string) => `/departments/${id}`,
+    UPDATE: (id: string) => `/departments/${id}`,
+    DELETE: (id: string) => `/departments/${id}`,
+  },
+
+  // Teams
+  TEAMS: {
+    LIST: '/teams',
+    CREATE: '/teams',
+    GET: (id: string) => `/teams/${id}`,
+    UPDATE: (id: string) => `/teams/${id}`,
+    DELETE: (id: string) => `/teams/${id}`,
+  },
+
+  // Roles
+  ROLES: {
+    LIST: '/roles',
+    CREATE: '/roles',
+    GET: (id: string) => `/roles/${id}`,
+    UPDATE: (id: string) => `/roles/${id}`,
+    DELETE: (id: string) => `/roles/${id}`,
+    CLONE: (id: string) => `/roles/${id}/clone`,
+  },
+
+  // Permissions
+  PERMISSIONS: {
+    LIST: '/permissions',
+    GET: (id: string) => `/permissions/${id}`,
+  },
 } as const

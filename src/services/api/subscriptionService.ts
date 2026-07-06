@@ -39,46 +39,46 @@ export const subscriptionService = {
     limit?: number
     status?: string
   }) => {
-    return axiosInstance.get<ApiResponse<Subscription[]>>('/v1/subscriptions', { params })
+    return axiosInstance.get<ApiResponse<Subscription[]>>('/subscriptions', { params })
   },
 
   // Get subscription by ID
   getSubscriptionById: (id: string) => {
-    return axiosInstance.get<ApiResponse<Subscription>>(`/v1/subscriptions/${id}`)
+    return axiosInstance.get<ApiResponse<Subscription>>(`/subscriptions/${id}`)
   },
 
   // Create subscription
   createSubscription: (data: Partial<Subscription>) => {
-    return axiosInstance.post<ApiResponse<Subscription>>('/v1/subscriptions', data)
+    return axiosInstance.post<ApiResponse<Subscription>>('/subscriptions', data)
   },
 
   // Update subscription
   updateSubscription: (id: string, data: Partial<Subscription>) => {
-    return axiosInstance.put<ApiResponse<Subscription>>(`/v1/subscriptions/${id}`, data)
+    return axiosInstance.put<ApiResponse<Subscription>>(`/subscriptions/${id}`, data)
   },
 
   // Upgrade subscription
   upgradeSubscription: (id: string, data: { plan_code: string; plan_name: string; amount: number }) => {
-    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/upgrade`, data);
+    return axiosInstance.post<ApiResponse<void>>(`/subscriptions/${id}/upgrade`, data);
   },
 
   // Suspend subscription
   suspendSubscription: (id: string) => {
-    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/suspend`)
+    return axiosInstance.post<ApiResponse<void>>(`/subscriptions/${id}/suspend`)
   },
 
   // Activate subscription
   activateSubscription: (id: string) => {
-    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/activate`)
+    return axiosInstance.post<ApiResponse<void>>(`/subscriptions/${id}/activate`)
   },
 
   // Cancel subscription
   cancelSubscription: (id: string) => {
-    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/cancel`)
+    return axiosInstance.post<ApiResponse<void>>(`/subscriptions/${id}/cancel`)
   },
 
   // Renew subscription
   renewSubscription: (id: string) => {
-    return axiosInstance.post<ApiResponse<void>>(`/v1/subscriptions/${id}/renew`)
+    return axiosInstance.post<ApiResponse<void>>(`/subscriptions/${id}/renew`)
   }
 }

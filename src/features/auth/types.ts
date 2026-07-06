@@ -25,13 +25,29 @@ export interface User {
   isLocked: boolean
   lastLoginAt?: string
   passwordExpiresAt?: string
+  mustChangePassword?: boolean
+  subscriptionTier?: string
+  enabledModules?: string[]
+  subscription?: {
+    plan_code?: string
+    plan_name?: string
+    status?: string
+    billing_cycle?: string
+  } | null
   createdAt: string
   updatedAt: string
 }
 
 export enum UserRole {
-  SUPER_ADMIN = 'super_admin',
-  ADMIN = 'admin',
+  PLATFORM_OWNER = 'platform_owner',
+  TENANT_ADMIN = 'tenant_admin',
+  RECOVERY_MANAGER = 'recovery_manager',
+  TEAM_LEADER = 'team_leader',
+  RECOVERY_AGENT = 'recovery_agent',
+  LEGAL_OFFICER = 'legal_officer',
+  QA = 'qa',
+  AUDITOR = 'auditor',
+  READ_ONLY = 'read_only',
   MANAGER = 'manager',
   SUPERVISOR = 'supervisor',
   AGENT = 'agent',
