@@ -45,7 +45,9 @@ export const authMiddleware = async (
       email: decoded.email,
       user_type: decoded.user_type,
       tenant_id: decoded.tenant_id,
+      tenantId: decoded.tenant_id,
     };
+    req.tenantId = decoded.tenant_id;
 
     logger.debug('Auth middleware passed', { userId: req.userId, userType: req.userType, tenantId: decoded.tenant_id });
     next();

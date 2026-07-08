@@ -12,6 +12,13 @@ class UserProvisioningController {
   createUser = asyncHandler(async (req: Request, res: Response) => {
     const tenantId = (req as any).user?.tenant_id;
     const userId = (req as any).user?.id;
+    
+    logger.info('Create user request', { tenantId, userId, body: req.body });
+
+    if (!tenantId) {
+      throw new AppError('Tenant ID is required', 400);
+    }
+
     const {
       first_name,
       last_name,
@@ -22,6 +29,10 @@ class UserProvisioningController {
       status = 'active',
       send_welcome_email = false,
     } = req.body;
+
+    // Convert empty strings to null
+    const deptId = department_id === '' ? null : department_id;
+    const tmId = team_id === '' ? null : team_id;
 
     if (!first_name || !last_name || !email || !role_id) {
       throw new AppError('First name, last name, email, and role are required', 400);
@@ -40,9 +51,9 @@ class UserProvisioningController {
       }
 
       // Validate department belongs to tenant
-      if (department_id) {
+      if (deptId) {
         const deptCheckQuery = 'SELECT id FROM departments WHERE id = $1 AND tenant_id = $2';
-        const deptCheckResult = await client.query(deptCheckQuery, [department_id, tenantId]);
+        const deptCheckResult = await client.query(deptCheckQuery, [deptId, tenantId]);
         if (deptCheckResult.rows.length === 0) {
           await client.query('ROLLBACK');
           throw new AppError('Invalid department', 400);
@@ -50,9 +61,9 @@ class UserProvisioningController {
       }
 
       // Validate team belongs to tenant
-      if (team_id) {
+      if (tmId) {
         const teamCheckQuery = 'SELECT id FROM teams WHERE id = $1 AND tenant_id = $2';
-        const teamCheckResult = await client.query(teamCheckQuery, [team_id, tenantId]);
+        const teamCheckResult = await client.query(teamCheckQuery, [tmId, tenantId]);
         if (teamCheckResult.rows.length === 0) {
           await client.query('ROLLBACK');
           throw new AppError('Invalid team', 400);
@@ -91,8 +102,8 @@ class UserProvisioningController {
         true,
         false,
         true,
-        department_id,
-        team_id,
+        deptId,
+        tmId,
         status,
       ];
       const userResult = await client.query(userQuery, userValues);
@@ -151,6 +162,10 @@ class UserProvisioningController {
       status,
     } = req.body;
 
+    // Convert empty strings to null
+    const deptId = department_id === '' ? null : department_id;
+    const tmId = team_id === '' ? null : team_id;
+
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -164,9 +179,9 @@ class UserProvisioningController {
       }
 
       // Validate department
-      if (department_id) {
+      if (deptId) {
         const deptCheckQuery = 'SELECT id FROM departments WHERE id = $1 AND tenant_id = $2';
-        const deptCheckResult = await client.query(deptCheckQuery, [department_id, tenantId]);
+        const deptCheckResult = await client.query(deptCheckQuery, [deptId, tenantId]);
         if (deptCheckResult.rows.length === 0) {
           await client.query('ROLLBACK');
           throw new AppError('Invalid department', 400);
@@ -174,9 +189,9 @@ class UserProvisioningController {
       }
 
       // Validate team
-      if (team_id) {
+      if (tmId) {
         const teamCheckQuery = 'SELECT id FROM teams WHERE id = $1 AND tenant_id = $2';
-        const teamCheckResult = await client.query(teamCheckQuery, [team_id, tenantId]);
+        const teamCheckResult = await client.query(teamCheckQuery, [tmId, tenantId]);
         if (teamCheckResult.rows.length === 0) {
           await client.query('ROLLBACK');
           throw new AppError('Invalid team', 400);
@@ -227,11 +242,11 @@ class UserProvisioningController {
       }
       if (department_id !== undefined) {
         fields.push(`department_id = $${paramIndex++}`);
-        values.push(department_id);
+        values.push(deptId);
       }
       if (team_id !== undefined) {
         fields.push(`team_id = $${paramIndex++}`);
-        values.push(team_id);
+        values.push(tmId);
       }
       if (status) {
         fields.push(`status = $${paramIndex++}`);
@@ -274,7 +289,7 @@ class UserProvisioningController {
     const tenantId = (req as any).user?.tenant_id;
     const { page = 1, limit = 10, search, department_id, team_id, role_id, status } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
-    const conditions: string[] = ['u.tenant_id = $1'];
+    const conditions: string[] = ['u.tenant_id = $1', 'u.deleted_at IS NULL'];
     const params: any[] = [tenantId];
     let paramIndex = 2;
 
@@ -303,12 +318,10 @@ class UserProvisioningController {
       params.push(status);
     }
 
-    conditions.push('u.deleted_at IS NULL');
-
     const client = await pool.connect();
     try {
       const countQuery = `
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT u.id)
         FROM users u
         LEFT JOIN user_roles ur ON u.id = ur.user_id
         WHERE ${conditions.join(' AND ')}
@@ -317,19 +330,19 @@ class UserProvisioningController {
       const total = parseInt(countResult.rows[0].count);
 
       const dataQuery = `
-        SELECT 
+        SELECT DISTINCT ON (u.id)
           u.id, u.first_name, u.last_name, u.email, u.user_type, u.status,
           u.department_id, u.team_id, u.last_login_at, u.created_at,
           d.name as department_name,
           t.name as team_name,
-          r.name as role_name, r.code as role_code
+          r.name as role_name, r.code as role_code, r.id as role_id
         FROM users u
         LEFT JOIN departments d ON u.department_id = d.id
         LEFT JOIN teams t ON u.team_id = t.id
         LEFT JOIN user_roles ur ON u.id = ur.user_id
         LEFT JOIN roles r ON ur.role_id = r.id
         WHERE ${conditions.join(' AND ')}
-        ORDER BY u.created_at DESC
+        ORDER BY u.id, u.created_at DESC
         LIMIT $${paramIndex++} OFFSET $${paramIndex++}
       `;
       params.push(Number(limit), offset);
@@ -353,7 +366,7 @@ class UserProvisioningController {
 
     try {
       const query = `
-        SELECT 
+        SELECT DISTINCT ON (u.id)
           u.id, u.first_name, u.last_name, u.email, u.user_type, u.status,
           u.department_id, u.team_id, u.last_login_at, u.created_at,
           d.name as department_name,
@@ -365,6 +378,7 @@ class UserProvisioningController {
         LEFT JOIN user_roles ur ON u.id = ur.user_id
         LEFT JOIN roles r ON ur.role_id = r.id
         WHERE u.id = $1 AND u.tenant_id = $2 AND u.deleted_at IS NULL
+        ORDER BY u.id
       `;
       const result = await client.query(query, [id, tenantId]);
 

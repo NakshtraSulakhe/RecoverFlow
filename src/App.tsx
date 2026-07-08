@@ -11,6 +11,7 @@ import { ProtectedRoute } from './components/routing/ProtectedRoute'
 import { PublicRoute } from './components/routing/PublicRoute'
 import { AuthLayout, PlatformLayout, TenantLayout } from './layouts'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
+import { SetupGuard } from './components/routing/SetupGuard'
 import { useEffect } from 'react';
 import { useAppDispatch } from './redux/store';
 import { initializeFromStorage } from './redux/slices/authSlice';
@@ -49,6 +50,7 @@ const PlatformSettingsPage = lazy(() => import('./pages/settings/PlatformSetting
 
 // Tenant pages
 const TenantDashboard = lazy(() => import('./pages/dashboard/Dashboard'))
+const SetupWizard = lazy(() => import('./pages/setup/SetupWizard'))
 const Organization = lazy(() => import('./pages/organization/Organization'))
 const AdminUsers = lazy(() => import('./pages/admin/Users'))
 const AdminRoles = lazy(() => import('./pages/admin/Roles'))
@@ -64,6 +66,14 @@ const Reports = lazy(() => import('./pages/reports/Reports'))
 const AI = lazy(() => import('./pages/ai/AI'))
 const Workflow = lazy(() => import('./pages/ptp-tracker/PTPTracker')) // Placeholder
 const TenantSettingsPage = lazy(() => import('./pages/settings/Settings'))
+const CaseStatuses = lazy(() => import('./pages/settings/CaseStatuses'))
+const ActivityTypes = lazy(() => import('./pages/settings/ActivityTypes'))
+const CaseTypes = lazy(() => import('./pages/settings/CaseTypes'))
+const CustomFields = lazy(() => import('./pages/settings/CustomFields'))
+const CommunicationTemplates = lazy(() => import('./pages/settings/CommunicationTemplates'))
+const WorkflowTemplates = lazy(() => import('./pages/settings/WorkflowTemplates'))
+const BusinessRules = lazy(() => import('./pages/settings/BusinessRules'))
+const BusinessUnits = lazy(() => import('./pages/settings/BusinessUnits'))
 
 // Common pages
 const Profile = lazy(() => import('./pages/profile/Profile'))
@@ -148,12 +158,16 @@ function App() {
                   </Route>
 
                   {/* Tenant Routes with TenantLayout */}
+                  <Route path="/settings/business-units" element={<Navigate to="/app/settings/business-units" replace />} />
                   <Route path="/app" element={
                     <ProtectedRoute>
-                      <TenantLayout />
+                      <SetupGuard>
+                        <TenantLayout />
+                      </SetupGuard>
                     </ProtectedRoute>
                   }>
                     <Route index element={<Navigate to="/app/dashboard" replace />} />
+                    <Route path="setup" element={<SetupWizard />} />
                     <Route path="dashboard" element={<TenantDashboard />} />
                     <Route path="organization" element={<Organization />} />
                     <Route path="admin/users" element={<AdminUsers />} />
@@ -170,6 +184,14 @@ function App() {
                     <Route path="ai" element={<AI />} />
                     <Route path="workflow" element={<Workflow />} />
                     <Route path="settings" element={<TenantSettingsPage />} />
+                    <Route path="settings/business-units" element={<BusinessUnits />} />
+                    <Route path="settings/case-statuses" element={<CaseStatuses />} />
+                    <Route path="settings/activity-types" element={<ActivityTypes />} />
+                    <Route path="settings/case-types" element={<CaseTypes />} />
+                    <Route path="settings/custom-fields" element={<CustomFields />} />
+                    <Route path="settings/communication-templates" element={<CommunicationTemplates />} />
+                    <Route path="settings/workflow-templates" element={<WorkflowTemplates />} />
+                    <Route path="settings/business-rules" element={<BusinessRules />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="priority-scoring" element={<PriorityScoring />} />
                     <Route path="ptp-tracker" element={<PTPTracker />} />

@@ -160,7 +160,7 @@ export const settingsSections = [
   },
   {
     text: 'Business Units',
-    path: '/settings/business-units',
+    path: '/app/settings/business-units',
     icon: <ApartmentOutlined />,
     description: 'Structure business units and divisions',
     color: 'primary' as const,

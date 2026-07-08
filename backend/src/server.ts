@@ -1,4 +1,4 @@
-import express, { Application, Request, Response } from 'express';
+﻿import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -28,6 +28,18 @@ import { teamRoutes } from './routes/team.routes';
 import { roleRoutes } from './routes/role.routes';
 import { permissionRoutes } from './routes/permission.routes';
 import { userProvisioningRoutes } from './routes/userProvisioning.routes';
+import domainPackRoutes from './routes/domain-pack.routes';
+import businessUnitRoutes from './routes/business-unit.routes';
+import organizationConfigRoutes from './routes/organization-configuration.routes';
+import workflowTemplateRoutes from './routes/workflow-template.routes';
+import businessRuleRoutes from './routes/business-rule.routes';
+import industryTemplateRoutes from './routes/industry-template.routes';
+import dashboardWidgetRoutes from './routes/dashboard-widget.routes';
+import caseStatusRoutes from './routes/case-status.routes';
+import activityTypeRoutes from './routes/activity-type.routes';
+import caseTypeRoutes from './routes/case-type.routes';
+import customFieldRoutes from './routes/custom-field.routes';
+import communicationTemplateRoutes from './routes/communication-template.routes';
 
 const app: Application = express();
 
@@ -142,6 +154,18 @@ app.use(`${config.apiPrefix}/teams`, teamRoutes);
 app.use(`${config.apiPrefix}/roles`, roleRoutes);
 app.use(`${config.apiPrefix}/permissions`, permissionRoutes);
 app.use(`${config.apiPrefix}/user-provisioning`, userProvisioningRoutes);
+app.use(`${config.apiPrefix}/domain-packs`, domainPackRoutes);
+app.use(`${config.apiPrefix}/business-units`, businessUnitRoutes);
+app.use(`${config.apiPrefix}/organization-config`, organizationConfigRoutes);
+app.use(`${config.apiPrefix}/workflow-templates`, workflowTemplateRoutes);
+app.use(`${config.apiPrefix}/business-rules`, businessRuleRoutes);
+app.use(`${config.apiPrefix}/industry-templates`, industryTemplateRoutes);
+app.use(`${config.apiPrefix}/dashboard-widgets`, dashboardWidgetRoutes);
+app.use(`${config.apiPrefix}/case-statuses`, caseStatusRoutes);
+app.use(`${config.apiPrefix}/activity-types`, activityTypeRoutes);
+app.use(`${config.apiPrefix}/case-types`, caseTypeRoutes);
+app.use(`${config.apiPrefix}/custom-fields`, customFieldRoutes);
+app.use(`${config.apiPrefix}/communication-templates`, communicationTemplateRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
@@ -152,9 +176,9 @@ app.use(errorHandler);
 // Start server
 const PORT = config.port;
 app.listen(PORT, () => {
-  logger.info(`🚀 Server running on port ${PORT} in ${config.env} mode`);
-  logger.info(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
-  logger.info(`🏥 Health check available at http://localhost:${PORT}/health`);
+  logger.info(`ðŸš€ Server running on port ${PORT} in ${config.env} mode`);
+  logger.info(`ðŸ“š API Documentation available at http://localhost:${PORT}/api-docs`);
+  logger.info(`ðŸ¥ Health check available at http://localhost:${PORT}/health`);
 });
 
 // Graceful shutdown
@@ -169,3 +193,7 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+
+
+

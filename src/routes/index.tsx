@@ -14,6 +14,7 @@ const AI = lazy(() => import('../pages/ai/AI'))
 const PriorityScoring = lazy(() => import('../pages/priority-scoring/PriorityScoring'))
 const PTPTracker = lazy(() => import('../pages/ptp-tracker/PTPTracker'))
 const Profile = lazy(() => import('../pages/profile/Profile'))
+const SetupWizard = lazy(() => import('../pages/setup/SetupWizard'))
 
 // Auth pages
 const Login = lazy(() => import('../pages/auth/Login'))
@@ -39,6 +40,13 @@ const Teams = lazy(() => import('../pages/settings/Teams'))
 const Designations = lazy(() => import('../pages/settings/Designations'))
 const Locations = lazy(() => import('../pages/settings/Locations'))
 const BusinessUnits = lazy(() => import('../pages/settings/BusinessUnits'))
+const CaseStatuses = lazy(() => import('../pages/settings/CaseStatuses'))
+const ActivityTypes = lazy(() => import('../pages/settings/ActivityTypes'))
+const CaseTypes = lazy(() => import('../pages/settings/CaseTypes'))
+const CustomFields = lazy(() => import('../pages/settings/CustomFields'))
+const CommunicationTemplates = lazy(() => import('../pages/settings/CommunicationTemplates'))
+const WorkflowTemplates = lazy(() => import('../pages/settings/WorkflowTemplates'))
+const BusinessRules = lazy(() => import('../pages/settings/BusinessRules'))
 
 // Public routes (no authentication required)
 export const publicRoutes = [
@@ -81,6 +89,10 @@ export const protectedRoutes = [
   {
     path: '/dashboard',
     element: <Dashboard />,
+  },
+  {
+    path: '/setup',
+    element: <SetupWizard />,
   },
   {
     path: '/profile',
@@ -186,6 +198,34 @@ export const protectedRoutes = [
   {
     path: '/settings/business-units',
     element: <BusinessUnits />,
+  },
+  {
+    path: '/settings/case-statuses',
+    element: <CaseStatuses />,
+  },
+  {
+    path: '/settings/activity-types',
+    element: <ActivityTypes />,
+  },
+  {
+    path: '/settings/case-types',
+    element: <CaseTypes />,
+  },
+  {
+    path: '/settings/custom-fields',
+    element: <CustomFields />,
+  },
+  {
+    path: '/settings/communication-templates',
+    element: <CommunicationTemplates />,
+  },
+  {
+    path: '/settings/workflow-templates',
+    element: <WorkflowTemplates />,
+  },
+  {
+    path: '/settings/business-rules',
+    element: <BusinessRules />,
   },
 ]
 

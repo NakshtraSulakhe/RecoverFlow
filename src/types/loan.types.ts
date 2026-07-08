@@ -1,0 +1,158 @@
+export interface Loan {
+  id: string;
+  tenant_id: string;
+  customer_id: string;
+  account_id?: string;
+  loan_number: string;
+  product_id?: string;
+  loan_type_id?: string;
+  loan_purpose?: string;
+  principal_amount: number;
+  interest_rate: number;
+  interest_type: 'FLAT' | 'REDUCING' | 'BALLOON';
+  tenure_months: number;
+  emi_amount?: number;
+  start_date: string;
+  end_date: string;
+  first_emi_date?: string;
+  disbursement_date?: string;
+  disbursement_amount?: number;
+  outstanding_principal: number;
+  outstanding_interest: number;
+  total_outstanding: number;
+  overdue_amount: number;
+  overdue_days: number;
+  dpd_days: number;
+  last_payment_date?: string;
+  next_payment_date?: string;
+  payment_frequency: 'MONTHLY' | 'WEEKLY' | 'BI_WEEKLY';
+  payment_day?: number;
+  processing_fee?: number;
+  insurance_amount?: number;
+  collateral_type?: string;
+  collateral_value?: number;
+  collateral_description?: string;
+  guarantor_required: boolean;
+  guarantor_count: number;
+  loan_status: 'active' | 'paid' | 'defaulted' | 'written_off' | 'settled' | 'closed';
+  recovery_status?: string;
+  recovery_bucket_id?: number;
+  assigned_to?: string;
+  relationship_manager_id?: string;
+  branch_id?: string;
+  settlement_amount?: number;
+  settlement_date?: string;
+  notes?: string;
+  terms_conditions?: string;
+  custom_fields?: Record<string, any>;
+  metadata?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  updated_by?: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  is_deleted: boolean;
+  customer_name?: string;
+  customer_code?: string;
+  primary_phone?: string;
+  product_name?: string;
+  product_type?: string;
+}
+
+export interface LoanCollateral {
+  id: string;
+  loan_id: string;
+  collateral_type: 'PROPERTY' | 'VEHICLE' | 'GOLD' | 'SHARES' | 'FD' | 'OTHER';
+  collateral_name: string;
+  description?: string;
+  value: number;
+  valuation_date?: string;
+  ownership_type?: string;
+  ownership_details?: string;
+  location_address?: string;
+  location_city?: string;
+  location_state?: string;
+  location_postal_code?: string;
+  location_country_code?: string;
+  documents?: any[];
+  is_insured: boolean;
+  insurance_policy_number?: string;
+  insurance_expiry_date?: string;
+  is_released: boolean;
+  released_date?: string;
+  notes?: string;
+  metadata?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface LoanGuarantor {
+  id: string;
+  loan_id: string;
+  guarantor_id?: string;
+  guarantor_name: string;
+  relationship?: string;
+  guarantee_type?: 'JOINT' | 'SEVERAL' | 'SEVERAL_AND_JOINT';
+  guarantee_amount?: number;
+  guarantee_percentage?: number;
+  is_primary_guarantor: boolean;
+  id_type?: string;
+  id_number?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  income?: number;
+  occupation?: string;
+  is_active: boolean;
+  notes?: string;
+  metadata?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  updated_by?: string;
+}
+
+export interface LoanFilters {
+  customer_id?: string;
+  account_id?: string;
+  product_id?: string;
+  loan_status?: string;
+  recovery_status?: string;
+  assigned_to?: string;
+  dpd_min?: number;
+  dpd_max?: number;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface LoanFormData {
+  customer_id: string;
+  account_id?: string;
+  product_id?: string;
+  loan_type_id?: string;
+  loan_purpose?: string;
+  principal_amount: number;
+  interest_rate: number;
+  interest_type: string;
+  tenure_months: number;
+  emi_amount?: number;
+  start_date: string;
+  end_date: string;
+  first_emi_date?: string;
+  disbursement_date?: string;
+  disbursement_amount?: number;
+  payment_frequency: string;
+  payment_day?: number;
+  processing_fee?: number;
+  insurance_amount?: number;
+  collateral_type?: string;
+  collateral_value?: number;
+  collateral_description?: string;
+  guarantor_required?: boolean;
+  notes?: string;
+  terms_conditions?: string;
+}

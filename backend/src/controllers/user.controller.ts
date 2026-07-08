@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
-import { ApiResponse, User } from '../types';
+import { ApiResponse } from '../types';
 import { logger } from '../utils/logger';
 import { pool } from '../config/database';
 
@@ -24,6 +24,10 @@ class UserController {
     if (!email || !first_name || !last_name) {
       throw new AppError('Missing required fields', 400);
     }
+
+    // Convert empty strings to null
+    const deptId = department_id === '' ? null : department_id;
+    const tmId = team_id === '' ? null : team_id;
 
     const client = await pool.connect();
     try {
@@ -59,8 +63,8 @@ class UserController {
         last_name,
         phone,
         user_type || 'recovery_agent',
-        department_id,
-        team_id,
+        deptId,
+        tmId,
         'active',
         password_hash,
       ];
@@ -217,18 +221,23 @@ class UserController {
     const { role_ids, ...userUpdates } = req.body;
     const currentUserId = (req as any).user?.id;
 
+    // Process updates to convert empty strings to null for UUID fields
+    const processedUpdates = { ...userUpdates };
+    if (processedUpdates.department_id === '') processedUpdates.department_id = null;
+    if (processedUpdates.team_id === '') processedUpdates.team_id = null;
+
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
 
       // Update user table
-      const fields = Object.keys(userUpdates)
+      const fields = Object.keys(processedUpdates)
         .filter(key => !['id', 'tenant_id', 'created_at', 'password_hash'].includes(key))
         .map((key, index) => `${key} = $${index + 3}`)
         .join(', ');
 
-      const values = [id, tenantId, ...Object.values(userUpdates).filter((_, index) => {
-        const key = Object.keys(userUpdates)[index];
+      const values = [id, tenantId, ...Object.values(processedUpdates).filter((_, index) => {
+        const key = Object.keys(processedUpdates)[index];
         return !['id', 'tenant_id', 'created_at', 'password_hash'].includes(key);
       })];
 
@@ -344,7 +353,6 @@ class UserController {
   });
 
   assignRolesToUser = asyncHandler(async (req: Request, res: Response) => {
-    const tenantId = (req as any).user?.tenant_id;
     const { id } = req.params;
     const { role_ids } = req.body;
 

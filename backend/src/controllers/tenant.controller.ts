@@ -351,38 +351,46 @@ class TenantController {
       }
     }
 
-    if (Object.keys(updates).length === 0) {
-      throw new AppError('No valid fields to update', 400);
-    }
-
     const client = await pool.connect();
     try {
-      const fields = Object.keys(updates)
-        .map((key, index) => `${key} = $${index + 2}`)
-        .join(', ');
+      let tenant;
+      if (Object.keys(updates).length > 0) {
+        const fields = Object.keys(updates)
+          .map((key, index) => `${key} = $${index + 2}`)
+          .join(', ');
 
-      const values = [id, ...Object.values(updates)];
+        const values = [id, ...Object.values(updates)];
 
-      const query = `
-        UPDATE tenants
-        SET ${fields}, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1 AND deleted_at IS NULL
-        RETURNING *
-      `;
+        const query = `
+          UPDATE tenants
+          SET ${fields}, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $1 AND deleted_at IS NULL
+          RETURNING *
+        `;
 
-      const result = await client.query(query, values);
+        const result = await client.query(query, values);
 
-      if (result.rows.length === 0) {
-        throw new AppError('Tenant not found', 404);
+        if (result.rows.length === 0) {
+          throw new AppError('Tenant not found', 404);
+        }
+
+        tenant = result.rows[0];
+        logger.info('Tenant updated successfully', { tenantId: id });
+      } else {
+        // No fields to update, just fetch existing tenant
+        const result = await client.query(
+          'SELECT * FROM tenants WHERE id = $1 AND deleted_at IS NULL',
+          [id]
+        );
+        if (result.rows.length === 0) {
+          throw new AppError('Tenant not found', 404);
+        }
+        tenant = result.rows[0];
       }
-
-      const tenant = result.rows[0];
-
-      logger.info('Tenant updated successfully', { tenantId: id });
 
       res.status(200).json({
         success: true,
-        message: 'Tenant updated successfully',
+        message: Object.keys(updates).length > 0 ? 'Tenant updated successfully' : 'No changes made',
         data: tenant,
       } as ApiResponse);
     } finally {

@@ -1,4 +1,4 @@
-export { apiClient } from './client';
+﻿export { apiClient } from './client';
 export * from './types';
 export type { Department, Team, Permission, Role } from './types';
 export { authService } from './auth.service';
@@ -15,3 +15,6 @@ export { departmentService } from './department.service';
 export { teamService } from './team.service';
 export { roleService } from './role.service';
 export { permissionService } from './permission.service';
+
+export { industryTemplateService } from './industryTemplateService';
+export { dashboardWidgetService } from './dashboardWidgetService';

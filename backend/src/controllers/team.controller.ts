@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
-import { ApiResponse, Team } from '../types';
+import { ApiResponse } from '../types';
 import { logger } from '../utils/logger';
 import { pool } from '../config/database';
 
@@ -15,6 +15,10 @@ class TeamController {
       throw new AppError('Name and code are required', 400);
     }
 
+    // Convert empty strings to null
+    const deptId = department_id === '' ? null : department_id;
+    const mgrId = manager_id === '' ? null : manager_id;
+
     const client = await pool.connect();
     try {
       const query = `
@@ -22,7 +26,7 @@ class TeamController {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING *
       `;
-      const values = [uuidv4(), tenantId, name, code, description, department_id, manager_id, true];
+      const values = [uuidv4(), tenantId, name, code, description, deptId, mgrId, true];
       const result = await client.query(query, values);
       const team = result.rows[0];
 
@@ -42,30 +46,30 @@ class TeamController {
     const tenantId = (req as any).user?.tenant_id;
     const { page = 1, limit = 10, search, is_active, department_id } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
-    const conditions: string[] = ['tenant_id = $1'];
+    const conditions: string[] = ['t.tenant_id = $1'];
     const params: any[] = [tenantId];
     let paramIndex = 2;
 
     if (is_active !== undefined) {
-      conditions.push(`is_active = $${paramIndex++}`);
+      conditions.push(`t.is_active = $${paramIndex++}`);
       params.push(is_active === 'true');
     }
 
     if (department_id) {
-      conditions.push(`department_id = $${paramIndex++}`);
+      conditions.push(`t.department_id = $${paramIndex++}`);
       params.push(department_id);
     }
 
     if (search) {
-      conditions.push(`(name ILIKE $${paramIndex++} OR code ILIKE $${paramIndex++})`);
+      conditions.push(`(t.name ILIKE $${paramIndex++} OR t.code ILIKE $${paramIndex++})`);
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    conditions.push('deleted_at IS NULL');
+    conditions.push('t.deleted_at IS NULL');
 
     const client = await pool.connect();
     try {
-      const countQuery = `SELECT COUNT(*) FROM teams WHERE ${conditions.join(' AND ')}`;
+      const countQuery = `SELECT COUNT(*) FROM teams t WHERE ${conditions.join(' AND ')}`;
       const countResult = await client.query(countQuery, params);
       const total = parseInt(countResult.rows[0].count);
 
@@ -126,15 +130,20 @@ class TeamController {
     const { id } = req.params;
     const updates = req.body;
 
+    // Process updates to convert empty strings to null for UUID fields
+    const processedUpdates = { ...updates };
+    if (processedUpdates.department_id === '') processedUpdates.department_id = null;
+    if (processedUpdates.manager_id === '') processedUpdates.manager_id = null;
+
     const client = await pool.connect();
     try {
-      const fields = Object.keys(updates)
+      const fields = Object.keys(processedUpdates)
         .filter(key => !['id', 'tenant_id', 'created_at'].includes(key))
         .map((key, index) => `${key} = $${index + 3}`)
         .join(', ');
 
-      const values = [id, tenantId, ...Object.values(updates).filter((_, index) => {
-        const key = Object.keys(updates)[index];
+      const values = [id, tenantId, ...Object.values(processedUpdates).filter((_, index) => {
+        const key = Object.keys(processedUpdates)[index];
         return !['id', 'tenant_id', 'created_at'].includes(key);
       })];
 

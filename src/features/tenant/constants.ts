@@ -70,7 +70,7 @@ export const TENANT_ROUTES = {
   TEAMS: '/settings/teams',
   DESIGNATIONS: '/settings/designations',
   LOCATIONS: '/settings/locations',
-  BUSINESS_UNITS: '/settings/business-units',
+  BUSINESS_UNITS: '/app/settings/business-units',
   BRANDING: '/settings/branding',
   SUBSCRIPTION: '/settings/subscription',
   SETTINGS: '/settings/general',

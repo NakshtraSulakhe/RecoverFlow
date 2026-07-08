@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+﻿import { useMemo } from 'react';
+import { useAppSelector } from '../redux/store';
 import { NAVIGATION_MODULES, getNavigationModules } from '../config/navigation/navigationRegistry';
 import { getAccessibleModules, hasModuleAccess } from '../config/navigation/moduleAccess';
 import { getSubscriptionFeatures, hasFeatureAccess } from '../config/navigation/subscriptionFeatures';
@@ -7,9 +7,11 @@ import { isFeatureEnabled } from '../config/navigation/featureFlags';
 import { NavigationModule, NavigationItem } from '../types/navigation.types';
 
 export const useNavigation = () => {
-  const { user, tenant } = useAuth();
-  const userRole = user?.user_type || 'read_only';
-  const subscriptionTier = tenant?.subscription_tier || 'starter';
+  const user = useAppSelector((state) => state.auth.user);
+  const tenantState = useAppSelector((state) => state.tenant as any);
+  const tenant = tenantState.currentTenant || tenantState.tenant || {};
+  const userRole = user?.role || (user as any)?.user_type || 'read_only';
+  const subscriptionTier = tenant?.subscription_tier || user?.subscriptionTier || 'starter';
   const userFeatureFlags = tenant?.feature_flags || {};
 
   const filteredModules = useMemo(() => {
@@ -137,3 +139,5 @@ export const useNavigation = () => {
     checkSubscriptionFeature,
   };
 };
+
+

@@ -41,6 +41,7 @@ export const tenantMiddleware = async (
       req.user = {};
     }
     req.user.tenant_id = tenantId;
+    req.user.tenantId = tenantId;
 
     // TODO: Add tenant validation from database
     // const tenant = await getTenantById(tenantId);

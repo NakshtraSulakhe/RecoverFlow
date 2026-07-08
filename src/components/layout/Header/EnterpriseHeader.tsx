@@ -187,14 +187,14 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
             >
               <div className="hidden sm:block text-right">
                 <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-zinc-900'}`}>
-                  {user?.first_name} {user?.last_name}
+                  {user?.firstName} {user?.lastName}
                 </p>
                 <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                  {user?.user_type?.replace('_', ' ').toUpperCase()}
+                  {user?.role?.replace('_', ' ').toUpperCase()}
                 </p>
               </div>
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold text-sm">
-                {user?.first_name?.[0] || user?.email?.[0] || 'U'}
+                {user?.firstName?.[0] || user?.email?.[0] || 'U'}
               </div>
             </button>
 
@@ -212,7 +212,7 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
                   <CardContent className="p-2">
                     <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 mb-2">
                       <p className="text-sm font-medium text-foreground">
-                        {user?.first_name} {user?.last_name}
+                        {user?.firstName} {user?.lastName}
                       </p>
                       <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </div>
